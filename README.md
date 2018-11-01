@@ -27,3 +27,5 @@ Descriptions:
 -hobbit-games.sh: monitors Quake-like game servers. These game servers have to be compliant with quakestat command
 
 -postfix.sh: monitors Postfix activity
+
+Each script includes its now readme content in the head of the file
