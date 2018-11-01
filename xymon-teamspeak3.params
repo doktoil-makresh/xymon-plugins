@@ -1,0 +1,11 @@
+TS3_SERVERQUERY_LOGIN=user
+TS3_SERVERQUERY_PASSWORD=password
+min_instance_uptime=500
+min_virtualservers_running_total=1
+max_virtualservers_running_total=1
+min_virtualserver_maxclients=32
+max_virtualserver_maxclients=32
+min_virtualserver_channelsonline=4
+max_virtualserver_channelsonline=4
+max_connection_packetloss_total=1
+max_connection_ping=50
