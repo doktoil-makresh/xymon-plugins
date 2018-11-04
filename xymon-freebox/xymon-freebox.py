@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8
 
 import freebox_v5_status.freeboxstatus
@@ -30,8 +30,8 @@ download = fbx.status['network']['interfaces']['WAN']['down']
 upload = fbx.status['network']['interfaces']['WAN']['up']
 downattn = fbx.status['adsl']['attenuation']['down']
 upattn = fbx.status['adsl']['attenuation']['up']
-downmargin = "NA"
-upmargin = "NA"
+downmargin = fbx.status['adsl']['noise_margin']['down']
+upmargin = fbx.status['adsl']['noise_margin']['up']
 
 if uptime < 300:
 	_uptime_color = "yellow"
