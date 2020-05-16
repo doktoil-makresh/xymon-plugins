@@ -40,11 +40,6 @@ def connection_get(method, headers={}):
     url = fbx_url + method
     return json.loads(requests.get(url, headers=headers, verify=mafreebox_fullchain).text)
 
-def connection_put(method,data=None,headers={}):
-    url = fbx_url + method
-    if data: data = json.dumps(data)
-    return json.loads(requests.put(url, data=data, headers=headers, verify=mafreebox_fullchain).text)
-
 def mksession():
     challenge = str(connection_get("login/")["result"]["challenge"])
     token_bytes = bytes(token , 'latin-1')
@@ -60,7 +55,6 @@ def mksession():
 
 def closesession(session_token):
     connection_post('login/logout/', headers={"X-Fbx-App-Auth": session_token})
-
 
 def get_system_status(session_token):
 	method = 'system/'
