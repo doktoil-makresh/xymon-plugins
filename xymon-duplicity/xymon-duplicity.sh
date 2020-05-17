@@ -4,9 +4,8 @@
 TEST=duplicity
 INTERVAL=12h
 export LANG=en_US
-BACKUP_BASE_DIR=rsync://backups@home.makelofine.org
-HOST=token
 CONFIG_FILE=${XYMONCLIENTHOME}/etc/xymon/xymon-duplicity.cfg
+BACKUP_BASE_DIR=${DUPLICITY_PROTOCOL}://${DUPLICITY_USER}@${DUPLICITY_SERVER}
 
 #Debug
 if [ "$1" == "debug" ] ; then
@@ -27,7 +26,7 @@ TODAY=$(LANG=en_US date +%c | awk '{print $1,$2,$3}')
 YESTERDAY=$(LANG=en_US date +"%c" -d yesterday | awk '{print $1,$2,$3}')
 
 for FOLDER in $FOLDERS ; do
-	COLLECTION_STATUS=$(duplicity collection-status $BACKUP_BASE_DIR/$HOST/$FOLDER 2 > /dev/null)
+	COLLECTION_STATUS=$(sudo duplicity collection-status $BACKUP_BASE_DIR/$HOST/$FOLDER 2 > /dev/null)
 	exitcode=$?
 	LATEST=$(echo $COLLECTION_STATUS | egrep "^Chain end time:" | tail -n 1 | awk '{print $4,$5,$6}' | sed  s/\ \/\ /)
 	
