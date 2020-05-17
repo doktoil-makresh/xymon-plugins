@@ -65,6 +65,7 @@ v0.3
 ===== Credits =====
 
 ===== Changelog =====
+
   * **2011-06-23 v0.2**
     * Teamspeak 3 RC1 antiflood support.
   * **2011-04-09 v0.1.1**

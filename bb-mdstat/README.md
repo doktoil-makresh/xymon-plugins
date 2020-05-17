@@ -1,41 +1,60 @@
 ====== Linux Software RAID monitoring ======
 
-^ Author | [[ doctor@makelofine.org | Damien Martins ]] |
-^ Compatibility | Xymon 4.2.2/4.2.3 - Kernel Linux 2.2/2.4/2.6 |
-^ Requirements | MDADM, unix, shell |
-^ Download | Part of https://github.com/doktoil-makresh/xymon-plugins.git |
-^ Last Update | 2010-01-15 |
+ Author | [[ doctor@makelofine.org | Damien Martins ]] |
+
+ Compatibility | Xymon 4.2.2/4.2.3 - Kernel Linux 2.2/2.4/2.6 |
+
+ Requirements | MDADM, unix, shell |
+
+ Download | Part of https://github.com/doktoil-makresh/xymon-plugins.git |
+
+ Last Update | 2010-01-15 |
 
 ===== Description =====
+
 Linux software RAID monitoring (using MDADM)
+
 -Status of any RAID device
+
 -Resync/recovery detection
 
 ===== Installation =====
+
 === Client side ===
+
 Copy bb-mdstat.sh in hobboit/xymon ext directory (usually in HOBBITCLIENTHOME/ext)
+
 Add the following lines to HOBBITCLIENTHOME/etc/clientlaunch.cfg :
+<code>
 [raid]
         #DISABLED
         ENVFILE $HOBBITCLIENTHOME/etc/hobbitclient.cfg
         CMD $HOBBITCLIENTHOME/ext/bb-mdstat.sh
         LOGFILE $HOBBITCLIENTHOME/logs/bb-mdstat.log
         INTERVAL 5m
+</code>
 === Server side ===
+
 Add the "raid" tag for appropriated hosts in HOBBITSERVERHOME/etc/bb-hosts, for example :
+
 123.234.123.234 toto # raid
 
 ===== Known  Bugs and Issues =====
+
 None
 
 ===== To Do =====
+
 None
 
 ===== Credits =====
+
 Reimplementation of http://www.deadcat.net/viewfile.php?fileid=731|deadcat's
+
 Several updates/bug fixes by Stuart Carmichael, who tested on more configurations than mine.
 
 ===== Changelog =====
+
   * **2001-06-16 v0.1**
     * Initial release
   * **2001-00-16 v0.2**

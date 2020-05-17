@@ -1,28 +1,43 @@
 ====== Samba monitoring ======
 
-^ Author         | [[doctor@makelofine.org| Damien Martins ]]                       |
-^ Compatibility  | From Xymon 4.2.0 to Xymon 4.2.3                                  |
-^ Requirements   | sh (or bash), samba tool suite for Uni* (smbclient, smbtree...)  |
-^ Download       | Part of https://github.com/doktoil-makresh/xymon-plugins.git     |
-^ Last Update    | 2014-02-23                                                       |
+ Author         | [[doctor@makelofine.org| Damien Martins ]]                       |
+
+ Compatibility  | From Xymon 4.2.0 to Xymon 4.2.3                                  |
+
+ Requirements   | sh (or bash), samba tool suite for Uni* (smbclient, smbtree...)  |
+
+ Download       | Part of https://github.com/doktoil-makresh/xymon-plugins.git     |
+
+ Last Update    | 2014-02-23                                                       |
 
 ===== Description =====
+
 A shell script to monitor samba servers and shares. Usefull to check availability on many samba servers/shares from a single host.
 
 ===== Installation =====
+
 === Client side ===
+
 Install samba-tools for your distro. Name may vary, therefore check you have smbclient available. You will also require smbtree if you want to check unallowed SMB shares.
+
 Untar this package, put hobbit-samba.sh in $BBHOME/ext directory
+
 Put hobbit-samba.conf in $BBHOME/etc directory
+
 Configuration details are in hobbit-samba.conf and almost well documented in.
+
 Modify variables (lines 40 and following) to fit your local configuration
+
 === Server side ===
+
 Add samba to you $BBHOME/server/bb-hosts line for the host running this script
 
 ===== Known  Bugs and Issues =====
+
 None
 
 ===== To Do =====
+
 v0.3 :
   * Support for a global user/password
   * Samba advanced parameters monitoring (locked files, permissions...)
@@ -32,6 +47,7 @@ v0.3 :
 ===== Credits =====
 
 ===== Changelog =====
+
   * **2009-01-14 v0.1**
     * Initial release.
   * **2009-03-17 v0.1.1**
