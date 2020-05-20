@@ -30,7 +30,8 @@ Nothing
 
 ===== Known  Bugs and Issues =====
 
-None, AFAIK
+Issue when application token contains backslash (\)
+Request a new one until it does not contain a backslash (or fix the bug)
 
 ===== To Do =====
 
