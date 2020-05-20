@@ -7,13 +7,15 @@ import json
 import hmac
 import hashlib
 import requests
-
+#Import config file
+import configparser
+config = configparser.ConfigParser()
+config.read(os.environ['XYMONCLIENTHOME']+'/etc/xymon-freebox_v6.ini')
+api_token = config['api_details']['api_token']
+api_version = config['api_details']['api_version']
+mafreebox_fullchain = config['cert_details']['mafreebox_fullchain']
 
 #Set your variables here
-api_version = 'v6' #Currently v4 & v6 are supported
-token = '1234567890AZERTYUIOP' # Paste app token, to generate, see https://dev.freebox.fr/sdk/os/login/#
-mafreebox_fullchain = os.environ['XYMONCLIENTHOME']+'/etc/'+'mafreebox_fullchain.pem' #This file must contain full certification chain for mafreebox.freebox.fr SSL certificate (Freebox ECC Root CA + Freebox ECC Intermediate CA)
-
 app_id='fr.freebox.monitoring' #Choose a name
 app_name = 'Monitoring' #This is the name that will appear in Freebox server applications access menu and on display as well
 app_version = '1' #Self explanatory
@@ -42,7 +44,7 @@ def connection_get(method, headers={}):
 
 def mksession():
     challenge = str(connection_get("login/")["result"]["challenge"])
-    token_bytes = bytes(token , 'latin-1')
+    token_bytes = bytes(api_token , 'latin-1')
     challenge_bytes = bytes(challenge, 'latin-1')
     password = hmac.new(token_bytes,challenge_bytes,hashlib.sha1).hexdigest()
     data={

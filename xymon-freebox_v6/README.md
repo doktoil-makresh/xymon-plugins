@@ -20,7 +20,7 @@ This script monitors Freebox Delta v7, Revolution v6 & Server Mini 4k using the 
 
 Python3
 
-Get the Freebox ECC Root CA + Freebox ECC Intermediate CA (available with the script, but should be deprecated one day)
+Get the Freebox ECC Root CA + Freebox ECC Intermediate CA (available with the script, but should be deprecated one day). See https://dev.freebox.fr/sdk/os/# to find it
 
 Register this app as per this procedure https://dev.freebox.fr/sdk/os/login/#
 
