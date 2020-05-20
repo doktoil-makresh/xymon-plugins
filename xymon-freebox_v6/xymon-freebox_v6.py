@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8
-
 import os
 import datetime
 import json
@@ -11,24 +10,26 @@ import requests
 import configparser
 config = configparser.ConfigParser()
 config.read(os.environ['XYMONCLIENTHOME']+'/etc/xymon-freebox_v6.ini')
+
+#Define variables from config file
+#Adapt for debug
 api_token = config['api_details']['api_token']
 api_version = config['api_details']['api_version']
 mafreebox_fullchain = config['cert_details']['mafreebox_fullchain']
+app_id = config['app_details']['app_id']
+app_name = config['app_details']['app_name']
+app_version = config['app_details']['app_version']
+device_name = config['app_details']['device_name']
+uptime_min = config['monitoring_details']['uptime_min']
+fan_rpm_min = config['monitoring_details']['fan_rpm_min']
+temp_cpum_max = config['monitoring_details']['temp_cpum_max']
+temp_cpub_max = config['monitoring_details']['temp_cpub_max']
+temp_switch_max = config['monitoring_details']['temp_switch_max']
+disk_expected_status = config['monitoring_details']['disk_expected_status']
+disk_expected_name = config['monitoring_details']['disk_expected_name']
+bandwidth_down_min = config['monitoring_details']['bandwidth_down_min']
+bandwidth_up_min = config['monitoring_details']['bandwidth_up_min']
 
-#Set your variables here
-app_id='fr.freebox.monitoring' #Choose a name
-app_name = 'Monitoring' #This is the name that will appear in Freebox server applications access menu and on display as well
-app_version = '1' #Self explanatory
-device_name = 'xymonclient' #This is the hostname of the device, displayed in Freebox server applications access menu
-uptime_min = 300 #Decide the uptime minimum value in seconds
-fan_rpm_min = 1800 #Decice  the fan minimum rotation per minutes
-temp_cpum_max = 65 #CPU B maximum temperature
-temp_cpub_max = 55 #CPU M maximum temperature
-temp_switch_max = 50 #Switch maximum temperature
-disk_expected_status = 'active' # valid values are active or 
-disk_expected_name = 'My Freebox HDD'#Set the name of your disk attached to Freebox Server
-bandwidth_down_min = 1000000000 #Expected download available (in bit per second)
-bandwidth_up_min = 600000000 #Expected download available (in bit per second)
 expected_box_authenticated = True #Expected box authenticated status
 
 #Do not change from here (or at your risks)
@@ -89,7 +90,7 @@ def get_xdsl_status(session_token):
 #Missing v6 example
 
 session_token = mksession()
-Get connection & system status
+#Get connection & system status
 connection_status = get_connection_status(session_token)
 system_status = get_system_status(session_token)
 #Not really useful, and considered as unstable as per https://dev.freebox.fr/sdk/os/connection/#
@@ -137,14 +138,14 @@ def test_metric(value1,value2):
 	else:
 		return('green')
 def test_max_threshold(value,threshold):
-	if value > threshold:
+	if value > int(threshold):
 		global yellow
 		yellow = 1
 		return('yellow')
 	else:
 		return('green')
 def test_min_threshold(value,threshold):
-	if value < threshold:
+	if value < int(threshold):
 		global yellow
 		yellow = 1
 		return('yellow')
@@ -172,7 +173,7 @@ else:
 	_status = "green"
 
 #Let's generate the final output
-_msg_line="&%sUptime: %s\n&%sDownload_bandwidth: %s\n&%sUpload_bandwidth: %s\nDownload_rate: %s\nUpload_rate: %s\n&%sFan_RPM: %s\n&%sCPU_temperature: %s\n&%sMotherboard_temperature: %s\n&%sSwitch_temperature: %s\n&%sDisk status: %s\n&%sDisk name: %s\n&%sBox authenticated: %s\n\n" % (uptime_color, str(uptime), bandwidth_down_color, str(bandwidth_down), bandwidth_up_color, str(bandwidth_up), str(download), str(upload), fan_status_color, str(fan_rpm), temp_cpum_color, str(temp_cpum), temp_cpub_color, str(temp_cpub), temp_switch_color, str(temp_switch), disk_status_color, disk_status, disk_name_color, disk_name, box_authenticated_color, box_authenticated)
+_msg_line="&%sUptime: %s\n&%sDownload_bandwidth: %s\n&%sUpload_bandwidth: %s\nDownload_rate: %s\nUpload_rate: %s\n&%sFan_RPM: %s\n&%sCPUM_temperature: %s\n&%sCPUB_temperature: %s\n&%sSwitch_temperature: %s\n&%sDisk status: %s\n&%sDisk name: %s\n&%sBox authenticated: %s\n\n" % (uptime_color, uptime, bandwidth_down_color, bandwidth_down, bandwidth_up_color, bandwidth_up, download, upload, fan_status_color, fan_rpm, temp_cpum_color, temp_cpum, temp_cpub_color, temp_cpub, temp_switch_color, temp_switch, disk_status_color, disk_status, disk_name_color, disk_name, box_authenticated_color, box_authenticated)
 
 #Let's send this output to Xymon server(s)
 _cmd_line="%s %s \"status %s.%s %s %s\n\n%s\"" %(os.environ['XYMON'], os.environ['XYMSRV'], os.environ['MACHINE'], _test, _status, _date, _msg_line)
