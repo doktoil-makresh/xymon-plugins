@@ -5,6 +5,8 @@ TEST=duplicity
 INTERVAL=12h
 export LANG=en_US
 CONFIG_FILE=${XYMONCLIENTHOME}/etc/xymon/xymon-duplicity.cfg
+#Load configuration file
+source $CONFIG_FILE
 BACKUP_BASE_DIR=${DUPLICITY_PROTOCOL}://${DUPLICITY_USER}@${DUPLICITY_SERVER}
 
 #Debug
@@ -18,17 +20,15 @@ if [ "$1" == "debug" ] ; then
 fi
 
 STATUS_FILE=${XYMONTMP}/xymon-duplicity.tmp
-#Load configuration file
-source $CONFIG_FILE
 
 #Check each folders defined in Xymon_duplicity_config_file
 TODAY=$(LANG=en_US date +%c | awk '{print $1,$2,$3}')
 YESTERDAY=$(LANG=en_US date +"%c" -d yesterday | awk '{print $1,$2,$3}')
 
 for FOLDER in $FOLDERS ; do
-	COLLECTION_STATUS=$(sudo duplicity collection-status $BACKUP_BASE_DIR/$HOST/$FOLDER 2 > /dev/null)
+	COLLECTION_STATUS=$(sudo duplicity collection-status $BACKUP_BASE_DIR/$MACHINE/$FOLDER 2>/dev/null)
 	exitcode=$?
-	LATEST=$(echo $COLLECTION_STATUS | egrep "^Chain end time:" | tail -n 1 | awk '{print $4,$5,$6}' | sed  s/\ \/\ /)
+	LATEST=$(echo "$COLLECTION_STATUS" | egrep "^Chain end time:" | tail -n 1 | awk '{print $4,$5,$6}' | sed  s/\ \/\ /)
 	
 #Check backup status
 	echo "Checks for $FOLDER backup:" >> $STATUS_FILE
@@ -38,7 +38,7 @@ for FOLDER in $FOLDERS ; do
 	fi
 	if [[ $LATEST == "" ]] ; then
 		red=1
-		echo "&red Critical - No backup found at $BACKUP_BASE_DIR/$HOST/$FOLDER" >> $STATUS_FILE
+		echo "&red Critical - No backup found at $BACKUP_BASE_DIR/$MACHINE/$FOLDER" >> $STATUS_FILE
 	fi
 	if [[ $LATEST == *$TODAY* ]] ; then
 		echo "&green OK - $LATEST" >> $STATUS_FILE
