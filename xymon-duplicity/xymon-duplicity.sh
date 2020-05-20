@@ -4,7 +4,7 @@
 TEST=duplicity
 INTERVAL=12h
 export LANG=en_US
-CONFIG_FILE=${XYMONCLIENTHOME}/etc/xymon/xymon-duplicity.cfg
+CONFIG_FILE=${XYMONCLIENTHOME}/etc/xymon-duplicity.cfg
 #Load configuration file
 source $CONFIG_FILE
 BACKUP_BASE_DIR=${DUPLICITY_PROTOCOL}://${DUPLICITY_USER}@${DUPLICITY_SERVER}
