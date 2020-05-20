@@ -70,7 +70,6 @@ def get_connection_status(session_token):
         content = connection_get(method, headers={"X-Fbx-App-Auth": session_token})
 #No difference between API v4 & v6
 #{'type': 'rfc2684', 'rate_down': 6830, 'bytes_up': 3167352, 6'ipv4_port_range': [0, 65535], 'rate_up': 3410, 'bandwidth_up': 825050, 'ipv6': '2a01::1', 'bandwidth_down': 3830000, 'media': 'xdsl', 'state': 'up', 'bytes_down': 14932915, 'ipv4': '1.2.3.4'}
-
         return(content['result'])
 
 def get_ftth_status(session_token):
@@ -78,25 +77,28 @@ def get_ftth_status(session_token):
 	content = connection_get(method, headers={"X-Fbx-App-Auth": session_token})
 #No difference between API v4 & v6
 #{'sfp_has_power_report': False, 'has_sfp': True, 'sfp_model': 'F-MDCONU3A', 'sfp_vendor': 'FREEBOX', 'sfp_has_signal': True, 'link': True, 'sfp_alim_ok': True, 'sfp_serial': '868802J200909591', 'sfp_present': True}
-
 	return(content['result'])
 
 def get_xdsl_status(session_token):
 	method = 'connection/xdsl/'
 	content = connection_get(method, headers={"X-Fbx-App-Auth": session_token})
-#Example to be generated
+#V4
+#{"status": { "status": "showtime", "protocol": "adsl2plus_a", "uptime": 5017, "modulation": "adsl" },"down": {"es": 43, "phyr": true, "attn": 0, "snr": 7, "nitro": true, "rate": 28031, "hec": 0, "crc": 0, "rxmt_uncorr": 0, "rxmt_corr": 0, "ses": 43, "fec": 0, "maxrate": 30636, "rxmt": 0}, "up": {"es": 0, "phyr": false, "attn": 23, "snr": 15, "nitro": true, "rate": 1022, "hec": 0, "crc": 0, "rxmt_uncorr": 0, "rxmt_corr": 0, "ses": 0, "fec": 0, "maxrate": 1022, "rxmt": 0}}
+#Missing v6 example
 
 session_token = mksession()
+Get connection & system status
+connection_status = get_connection_status(session_token)
+system_status = get_system_status(session_token)
 #Not really useful, and considered as unstable as per https://dev.freebox.fr/sdk/os/connection/#
 #xdsl_status = get_xdsl_status(session_token)
 #ftth_status = get_ftth_status(session_token)
-
-connection_status = get_connection_status(session_token)
-system_status = get_system_status(session_token)
 closesession(session_token)
+#Extract useful values
 uptime = system_status['uptime_val']
 disk_status = system_status['disk_status']
 disk_name = system_status['user_main_storage']
+box_authenticated = system_status['box_authenticated']
 if api_version == 'v4':
         fan_rpm = system_status['fan_rpm']
         temp_cpum = system_status['temp_cpum']
@@ -116,15 +118,15 @@ bandwidth_down = connection_status['bandwidth_down']
 bandwidth_up = connection_status['bandwidth_up']
 download = connection_status['rate_down']
 upload = connection_status['rate_up']
-box_authenticated = system_status['box_authenticated']
 
+#Let's initialize the Xymon values
 _test = "fbx_infos"
 red = 0
 yellow = 0
 now=datetime.datetime.now()
 _date=now.strftime("%a %d %b %Y %H:%M:%S %Z")
 
-
+#Definition of the tests
 def test_metric(value1,value2):
 	if not value1 == value2:
 		global yellow
@@ -147,6 +149,7 @@ def test_min_threshold(value,threshold):
 	else:
 		return('green')
 
+#Lets test and compare values with thresholds
 uptime_color = test_min_threshold(uptime,uptime_min)
 fan_status_color = test_min_threshold(fan_rpm,fan_rpm_min)
 temp_cpum_color = test_max_threshold(temp_cpum,temp_cpum)
@@ -158,6 +161,7 @@ bandwidth_down_color = test_min_threshold(bandwidth_down,bandwidth_down_min)
 bandwidth_up_color = test_min_threshold(bandwidth_up,bandwidth_up_min)
 box_authenticated_color = test_metric(box_authenticated,expected_box_authenticated)
 
+#Let's generate the statuses colors
 if red == 1:
 	_status = "red"
 elif yellow == 1:
@@ -165,9 +169,9 @@ elif yellow == 1:
 else:
 	_status = "green"
 
+#Let's generate the final output
 _msg_line="&%sUptime: %s\n&%sDownload_bandwidth: %s\n&%sUpload_bandwidth: %s\nDownload_rate: %s\nUpload_rate: %s\n&%sFan_RPM: %s\n&%sCPU_temperature: %s\n&%sMotherboard_temperature: %s\n&%sSwitch_temperature: %s\n&%sDisk status: %s\n&%sDisk name: %s\n&%sBox authenticated: %s\n\n" % (uptime_color, str(uptime), bandwidth_down_color, str(bandwidth_down), bandwidth_up_color, str(bandwidth_up), str(download), str(upload), fan_status_color, str(fan_rpm), temp_cpum_color, str(temp_cpum), temp_cpub_color, str(temp_cpub), temp_switch_color, str(temp_switch), disk_status_color, disk_status, disk_name_color, disk_name, box_authenticated_color, box_authenticated)
 
-#Lancement commande 
+#Let's send this output to Xymon server(s)
 _cmd_line="%s %s \"status %s.%s %s %s\n\n%s\"" %(os.environ['XYMON'], os.environ['XYMSRV'], os.environ['MACHINE'], _test, _status, _date, _msg_line)
 os.system(_cmd_line)
-
