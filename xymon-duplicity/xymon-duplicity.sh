@@ -34,7 +34,7 @@ for FOLDER in $FOLDERS ; do
 	echo "Checks for $FOLDER backup:" >> $STATUS_FILE
 	if [[ $exitcode != 0 ]] ; then
 		red=1
-		echo "&red Critical - Unable to perform the check command"
+		echo "&red Critical - Unable to perform the check command" >> $STATUS_FILE
 	fi
 	if [[ $LATEST == "" ]] ; then
 		red=1
