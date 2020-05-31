@@ -20,6 +20,7 @@ if [ "$1" == "debug" ] ; then
 fi
 
 STATUS_FILE=${XYMONTMP}/xymon-duplicity.tmp
+rm -f $STATUS_FILE
 
 #Check each folders defined in Xymon_duplicity_config_file
 TODAY=$(LANG=en_US date +%c | awk '{print $1,$2,$3}')
