@@ -150,13 +150,13 @@ else:
 if veranda_humidity > veranda_humidity_alarm_max:
 	red = 1
 	veranda_humidity_color = "red"
-elif veranda_humidity > ground_humidity_warn_max:
+elif veranda_humidity > veranda_humidity_warn_max:
 	yellow = 1
 	veranda_humidity_color = "yellow"
-elif veranda_humidity < ground_humidity_alarm_min:
+elif veranda_humidity < veranda_humidity_alarm_min:
 	red = 1
 	veranda_humidity_color = "red"
-elif veranda_humidity < ground_humidity_warn_min:
+elif veranda_humidity < veranda_humidity_warn_min:
 	yellow = 1
 	veranda_humidity_color = "yellow"
 else:
