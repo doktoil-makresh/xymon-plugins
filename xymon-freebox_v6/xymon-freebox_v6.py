@@ -15,6 +15,7 @@ config.read(os.environ['XYMONCLIENTHOME']+'/etc/xymon-freebox_v6.ini')
 #Adapt for debug
 api_token = config['api_details']['api_token']
 api_version = config['api_details']['api_version']
+mafreebox_cert_check = config['cert_details']['cert_check']
 mafreebox_fullchain = config['cert_details']['mafreebox_fullchain']
 app_id = config['app_details']['app_id']
 app_name = config['app_details']['app_name']
@@ -33,6 +34,8 @@ bandwidth_up_min = config['monitoring_details']['bandwidth_up_min']
 expected_box_authenticated = True #Expected box authenticated status
 
 #Do not change from here (or at your risks)
+if mafreebox_cert_check == "False":
+    mafreebox_fullchain = False
 fbx_url = "https://mafreebox.freebox.fr/api/"+api_version+"/"
 def connection_post(method,data=None,headers={}):
     url = fbx_url + method
