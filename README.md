@@ -16,8 +16,6 @@ Descriptions:
 
 -dedibackup: monitors Dedibackup service. Dedibackup is the name of the backup system offered to clients of formerly-named Dedibox (now Online.net) service.
 
--xymon-freebox: monitors Freebox (crystal and up to v4). Freebox is a DSL/fiber modem of Free.fr ISP
-
 -hobbit-samba: monitors SMB shares
 
 -ovhbackup: monitors OVH backup service. OVH is a company renting dedidacted and mutualized servers
@@ -36,4 +34,4 @@ Descriptions:
 
 -xymon-home_sensors : check sensors values based on Oregon Scientific bluetooth weather station
 
-Each script includes its now readme content in the head of the file
+Each script includes its own readme content in the head of the file
