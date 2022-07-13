@@ -121,9 +121,26 @@ fi
 DISK_WARNING_TEMP=$($GREP ^DISK_WARNING_TEMP= $CONFIG_FILE | $SED s/^DISK_WARNING_TEMP=//)
 DISK_PANIC_TEMP=$($GREP ^DISK_PANIC_TEMP= $CONFIG_FILE | $SED s/^DISK_PANIC_TEMP=//)
 
+function set_disk_entries_values()
+{
+  ENTRIES=$1
+  if [ "$(echo $ENTRIES | "$AWK" -F, '{print NF}')" -eq 1 ] ; then
+     LOCAL_DISK_WARNING_TEMP=$DISK_WARNING_TEMP
+     LOCAL_DISK_PANIC_TEMP=$DISK_PANIC_TEMP
+  elif [ "$(echo $ENTRIES | "$AWK" -F, '{print NF}')" -eq 2 ] ; then
+    LOCAL_DISK_WARNING_TEMP=$DISK_WARNING_TEMP
+    LOCAL_DISK_PANIC_TEMP=$(echo $ENTRIES | "$AWK" -F, '{print $2}')
+  elif [ "$(echo $ENTRIES | "$AWK" -F, '{print NF}')" -eq 3 ] ; then
+    LOCAL_DISK_WARNING_TEMP=$(echo $ENTRIES | "$AWK" -F, '{print $2}')
+    LOCAL_DISK_PANIC_TEMP=$(echo $ENTRIES | "$AWK" -F, '{print $3}')
+  fi
+}
+
 function use_hddtemp ()
 {
-for DISK in $("$GREP" "^DISK=" "$CONFIG_FILE" | "$SED" s/^DISK=//) ; do
+  for ENTRIES in $("$GREP" "^DISK=" "$CONFIG_FILE" | "$SED" s/^DISK=// ) ; do
+  	DISK=$(echo $ENTRIES | "$AWK" -F, '{print $1}')
+	set_disk_entries_values $ENTRIES
 	HDD_TEMP="$($CMD_HDDTEMP $DISK | $SED s/..$// | $AWK '{print $NF}')"
 	if [ ! "$(echo $HDD_TEMP | grep "^[ [:digit:] ]*$")" ] ; then
 		RED=1
@@ -131,16 +148,16 @@ for DISK in $("$GREP" "^DISK=" "$CONFIG_FILE" | "$SED" s/^DISK=//) ; do
 It seems S.M.A.R.T. is no more responding !!!"
 	echo "La température de $DISK n'est pas un nombre :/
 HDD_TEMP : $HDD_TEMP"
-	elif [ "$HDD_TEMP" -ge "$DISK_PANIC_TEMP" ] ; then
+	elif [ "$HDD_TEMP" -ge "$LOCAL_DISK_PANIC_TEMP" ] ; then
 		RED=1
-		LINE="&red Disk temperature is CRITICAL (Panic is $DISK_PANIC_TEMP) :
+		LINE="&red Disk temperature is CRITICAL (Panic is $LOCAL_DISK_PANIC_TEMP) :
 "$DISK"_temperature: ${HDD_TEMP}"
-	elif [ "$HDD_TEMP" -ge "$DISK_WARNING_TEMP" ] ; then
+	elif [ "$HDD_TEMP" -ge "$LOCAL_DISK_WARNING_TEMP" ] ; then
 		YELLOW="1"
-		LINE="&yellow Disk temperature is HIGH (Warning is $DISK_WARNING_TEMP) :
+		LINE="&yellow Disk temperature is HIGH (Warning is $LOCAL_DISK_WARNING_TEMP) :
 "$DISK"_temperature: ${HDD_TEMP}"
-	elif [ "$HDD_TEMP" -lt "$DISK_WARNING_TEMP" ] ; then
-		LINE="&green Disk temperature is OK (Warning is $DISK_WARNING_TEMP) :
+	elif [ "$HDD_TEMP" -lt "$LOCAL_DISK_WARNING_TEMP" ] ; then
+		LINE="&green Disk temperature is OK (Warning is $LOCAL_DISK_WARNING_TEMP) :
 "$DISK"_temperature: ${HDD_TEMP}"
 	fi
 	echo "$LINE" >> "$MSG_FILE"
@@ -155,7 +172,9 @@ if [ $SMARTCTL_CHIPSET ] ; then
 else
 	SMARTCTL_ARGS="-A"
 fi
-for DISK in $("$GREP" "^DISK=" "$CONFIG_FILE" | "$SED" s/^DISK=//) ; do
+for ENTRIES in $("$GREP" "^DISK=" "$CONFIG_FILE" | "$SED" s/^DISK=//) ; do
+	DISK=$(echo $ENTRIES | "$AWK" -F, '{print $1}')
+	set_disk_entries_values $ENTRIES
 	HDD_TEMP="$($SMARTCTL $SMARTCTL_ARGS $DISK | $GREP "^194" | $AWK '{print $10}')"
         if [ ! "$(echo $HDD_TEMP | grep "^[ [:digit:] ]*$")" ] ; then
                 RED=1
@@ -163,16 +182,16 @@ for DISK in $("$GREP" "^DISK=" "$CONFIG_FILE" | "$SED" s/^DISK=//) ; do
 It seems S.M.A.R.T. is no more responding !!!"
         echo "La température de $DISK n'est pas un nombre :/
 HDD_TEMP : $HDD_TEMP"
-        elif [ "$HDD_TEMP" -ge "$DISK_PANIC_TEMP" ] ; then
+        elif [ "$HDD_TEMP" -ge "$LOCAL_DISK_PANIC_TEMP" ] ; then
                 RED=1
-                LINE="&red Disk temperature is CRITICAL (Panic is $DISK_PANIC_TEMP) :
+                LINE="&red Disk temperature is CRITICAL (Panic is $LOCAL_DISK_PANIC_TEMP) :
 "$DISK"_temperature: ${HDD_TEMP}"
-        elif [ "$HDD_TEMP" -ge "$DISK_WARNING_TEMP" ] ; then
+        elif [ "$HDD_TEMP" -ge "$LOCAL_DISK_WARNING_TEMP" ] ; then
                 YELLOW="1"
-                LINE="&yellow Disk temperature is HIGH (Warning is $DISK_WARNING_TEMP) :
+                LINE="&yellow Disk temperature is HIGH (Warning is $LOCAL_DISK_WARNING_TEMP) :
 "$DISK"_temperature: ${HDD_TEMP}"
-        elif [ "$HDD_TEMP" -lt "$DISK_WARNING_TEMP" ] ; then
-                LINE="&green Disk temperature is OK (Warning is $DISK_WARNING_TEMP) :
+        elif [ "$HDD_TEMP" -lt "$LOCAL_DISK_WARNING_TEMP" ] ; then
+                LINE="&green Disk temperature is OK (Warning is $LOCAL_DISK_WARNING_TEMP) :
 "$DISK"_temperature: ${HDD_TEMP}"
         fi
         echo "$LINE" >> "$MSG_FILE"
@@ -206,6 +225,7 @@ fi
 echo "$LINE" >> "$MSG_FILE"
 unset MIN MAX PANIC VALUE WARNING
 }
+
 function test_fan ()
 {
 SOURCE=$1
