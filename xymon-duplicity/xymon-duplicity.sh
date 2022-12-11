@@ -8,7 +8,7 @@ if [ "$1" == "debug" ] ; then
         XYMON=echo
         XYMONCLIENTHOME="/usr/lib/xymon/client"
         XYMONTMP="$PWD"
-        XYMONDISP=your_xymon_server
+        XYMONSRV=your_xymon_server
         MACHINE=$(hostname)
 fi
 
