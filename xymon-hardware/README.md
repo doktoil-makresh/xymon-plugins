@@ -73,4 +73,4 @@ v0.7
   * **2013-09-27 v0.5**
     * Add support for HP monitoring tool (hpacucli)
   * **2022-07-13 v0.6**
-    * Add support for disks independant temperatures
+    * Add support for disks independent temperatures
