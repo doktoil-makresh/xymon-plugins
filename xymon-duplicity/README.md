@@ -8,7 +8,7 @@
 
  Download | Part of https://github.com/doktoil-makresh/xymon-plugins/ |
 
- Last Update | 2020-05-17 |
+ Last Update | 2022-12-11 |
 
 ===== Description =====
 
@@ -46,4 +46,5 @@ https://camille.wordpress.com/2017/09/20/incremental-backups-with-duplicity-plus
 
   * **2020-05-17**
     * Initial release
-
+  * **2022-12-11**
+    * Fixed debug feature

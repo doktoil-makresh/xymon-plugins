@@ -1,13 +1,6 @@
 #!/bin/bash                                                                                                                                                                      
 #Verifying if the backup plan is working or not                                                                                                                                  
 #Heavily inspired by https://camille.wordpress.com/2017/09/20/incremental-backups-with-duplicity-plus-nagios-monitoring/
-TEST=duplicity
-INTERVAL=12h
-export LANG=en_US
-CONFIG_FILE=${XYMONCLIENTHOME}/etc/xymon-duplicity.cfg
-#Load configuration file
-source $CONFIG_FILE
-BACKUP_BASE_DIR=${DUPLICITY_PROTOCOL}://${DUPLICITY_USER}@${DUPLICITY_SERVER}
 
 #Debug
 if [ "$1" == "debug" ] ; then
@@ -18,6 +11,15 @@ if [ "$1" == "debug" ] ; then
         XYMONDISP=your_xymon_server
         MACHINE=$(hostname)
 fi
+
+TEST=duplicity
+INTERVAL=12h
+export LANG=en_US
+CONFIG_FILE=${XYMONCLIENTHOME}/etc/xymon-duplicity.cfg
+#Load configuration file
+source $CONFIG_FILE
+BACKUP_BASE_DIR=${DUPLICITY_PROTOCOL}://${DUPLICITY_USER}@${DUPLICITY_SERVER}
+
 
 STATUS_FILE=${XYMONTMP}/xymon-duplicity.tmp
 rm -f $STATUS_FILE
