@@ -8,7 +8,7 @@ Requirements   | sh (or bash), hddtemp, smartmontools                          |
 
 Download       | Part of https://github.com/doktoil-makresh/xymon-plugins.git  |
 
-Last Update    | 2013-09-27                                                    |
+Last Update    | 2022-07-13                                                    |
 
 ===== Description =====
 
@@ -36,12 +36,10 @@ None
 
 ===== To Do =====
 
-v0.6
+v0.7
 
-  * To be independent of /etc/sensors.conf -> we get raw values, and we set right ones from those, and define thresolds in hobbit-hardware.conf file         
-
-  * Support for independant temperatures thresolds for each disk
-
+  * To be independent of /etc/sensors.conf -> we get raw values, and we set right ones from those, and define thresolds in hobbit-hardware.conf file       
+  
   * Support for multiples sensors
 
   * Support for multiples disk controllers chipsets
@@ -74,3 +72,5 @@ v0.6
     * Fix hddtemp output handling (print last field instead of field N)
   * **2013-09-27 v0.5**
     * Add support for HP monitoring tool (hpacucli)
+  * **2022-07-13 v0.6**
+    * Add support for disks independant temperatures
