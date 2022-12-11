@@ -1,49 +1,13 @@
 #!/bin/bash
 
 # ALL THIS SCRIPT IS UNDER GPL LICENSE
-# Version 0.5.1
+# Version 0.6
 # Title:     xymon-hardware
 # Author:    Damien Martins  ( doctor |at| makelofine |dot| org)
-# Date:      2018-11-01
+# Date:      2022-07-13
 # Purpose:   Check Uni* hardware sensors
 # Platforms: Uni* having lm-sensor and hddtemp utilities
 # Tested:    Xymon 4.3.4 / hddtemp version 0.3-beta15 (Debian Lenny and Etch packages) / sensors version 3.0.2 with libsensors version 3.0.2 (Debian Lenny package) / sensors version 3.0.1 with libsensors version 3.0.1 (Debian Etch package)
- 
-#TODO for v0.6
-#       -To be independent of /etc/sensors.conf -> we get raw values, and we set right ones from those, and define thresolds in xymon-hardware.cfg file
-#	-Support for multiples sensors
-#	-Support for independant temperatures thresolds for each disk
-#
-# History :
-# 01 nov 2018 - Steffan ??
-#	v0.5.1 : Adds support for spare drive (not reported as failed anymore)
-# 27 sep 2013 - Damien Martins
-#	v0.5 : Adds support for HP monitoring tools (hpacucli)
-# 27 jun 2013 - Damien Martins and Xavier Carol i Rosell
-#	v0.4 : Fixes hddtemp output handling (print last field instead of field N) 
-# 09 sep 2011 - Damien Martins
-#	v0.3 : Adds support for OpenManage Physical disks, temps
-# 17 feb 2010 - Damien Martins
-#	v0.2.2 : Minor code optimizations
-# 22 jan 2010 - Damien Martins
-#	v0.2.1 : Minor bug fix
-# 14 nov 2009 - Damien Martins
-#	v0.2 : -Getting sensor probe no more hard coded
-#	-More verbosity when commands fail
-#	-Disk temperature thresolds in xymon-hardware.cfg file.
-#	-Support smartctl to replace hddtemp (if needed)
-#	-Possibility to disable lm-sensors
-#	-Possibility to choose smartctl chipset
-# 25 jun 2009 - Damien Martins
-#       v0.1.2 : -New error messages (more verbose, more accurate)
-# 18 jun 2009 - Damien Martins
-#       v0.1.1 : -Bug fixes
-# 15 jan 2009 - Damien Martins
-#        v0.1 : First lines, trying to get :
-#       -temperatures value, and defined thresolds
-#       -fan rotation speed and thresold
-#       -voltages and thresolds
-#       -HDD temperature (thresold is not include, so we set it in this file)
  
 #################################################################################
 # YOU MUST CONFIGURE LM-SENSORS IN ORDER TO GET VALUES BEFORE USING THIS SCRIPT #
@@ -146,7 +110,7 @@ function use_hddtemp ()
 		RED=1
 		LINE="&red Disk $DISK temperature is UNKNOWN (HDD_TEMP VALUE IS : $HDD_TEMP).
 It seems S.M.A.R.T. is no more responding !!!"
-	echo "La température de $DISK n'est pas un nombre :/
+	echo "La tempÃ©rature de $DISK n'est pas un nombre :/
 HDD_TEMP : $HDD_TEMP"
 	elif [ "$HDD_TEMP" -ge "$LOCAL_DISK_PANIC_TEMP" ] ; then
 		RED=1
@@ -180,7 +144,7 @@ for ENTRIES in $("$GREP" "^DISK=" "$CONFIG_FILE" | "$SED" s/^DISK=//) ; do
                 RED=1
                 LINE="&red Disk $DISK temperature is UNKNOWN (HDD_TEMP VALUE IS : $HDD_TEMP).
 It seems S.M.A.R.T. is no more responding !!!"
-        echo "La température de $DISK n'est pas un nombre :/
+        echo "La tempÃ©rature de $DISK n'est pas un nombre :/
 HDD_TEMP : $HDD_TEMP"
         elif [ "$HDD_TEMP" -ge "$LOCAL_DISK_PANIC_TEMP" ] ; then
                 RED=1
