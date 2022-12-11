@@ -44,7 +44,7 @@ else
   status="green"
 fi
 
-"$XYMON" "$XYMSRV" "status+"$INTERVAL" "$MACHINE"."$TEST" "$status" $(date)
+"$XYMON" "$XYMSRV" "status" "$MACHINE"."$TEST" "$status" $(date)
 
 $(cat $tmp_file)
 "
