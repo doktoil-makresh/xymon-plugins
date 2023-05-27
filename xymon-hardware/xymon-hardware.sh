@@ -19,18 +19,11 @@
 #Debug
 if [ "$1" == "debug" ] ; then
 	echo "Debug ON"
-        BB=echo
-        XYMONCLIENTHOME="/usr/local/Xymon/client/"
-        XYMONTMP="$PWD"
-        BBDISP=your_xymon_server
-        MACHINE=$(hostname)
-        CAT="/bin/cat"
-        AWK="/usr/bin/nawk"
-        GREP="/bin/grep"
-	RM="/bin/rm"
-	CUT="/usr/bin/cut"
-	DATE="/bin/date"
-	SED="/bin/sed"
+  BB=echo
+  XYMONCLIENTHOME="/usr/lib/xymon/client/"
+  XYMONTMP="$PWD"
+  BBDISP=your_xymon_server
+  MACHINE=$(hostname)
 	CONFIG_FILE="xymon-hardware.cfg"
 	TMP_FILE="xymon-hardware.tmp"
 	MSG_FILE="xymon-hardware.msg"
@@ -43,7 +36,6 @@ CONFIG_FILE="${XYMONCLIENTHOME}/etc/xymon-hardware.cfg"
 TMP_FILE="${XYMONTMP}/xymon-hardware.tmp"
 CMD_HDDTEMP="sudo /usr/sbin/hddtemp"
 SENSORS="/usr/bin/sensors"
-BC="/usr/bin/bc"
 SMARTCTL="sudo /usr/sbin/smartctl"
 OMREPORT="/opt/dell/srvadmin/sbin/omreport"
 HPACUCLI="sudo /usr/sbin/hpacucli"
@@ -79,33 +71,33 @@ fi
 #Hard disk temperature monitoring
 
 if [ -f "$MSG_FILE" ] ; then
-	"$RM" "$MSG_FILE"
+	rm "$MSG_FILE"
 fi
 
-DISK_WARNING_TEMP=$($GREP ^DISK_WARNING_TEMP= $CONFIG_FILE | $SED s/^DISK_WARNING_TEMP=//)
-DISK_PANIC_TEMP=$($GREP ^DISK_PANIC_TEMP= $CONFIG_FILE | $SED s/^DISK_PANIC_TEMP=//)
+DISK_WARNING_TEMP=$(grep ^DISK_WARNING_TEMP= $CONFIG_FILE | sed s/^DISK_WARNING_TEMP=//)
+DISK_PANIC_TEMP=$(grep ^DISK_PANIC_TEMP= $CONFIG_FILE | sed s/^DISK_PANIC_TEMP=//)
 
 function set_disk_entries_values()
 {
   ENTRIES=$1
-  if [ "$(echo $ENTRIES | "$AWK" -F, '{print NF}')" -eq 1 ] ; then
+  if [ "$(echo $ENTRIES | awk -F, '{print NF}')" -eq 1 ] ; then
      LOCAL_DISK_WARNING_TEMP=$DISK_WARNING_TEMP
      LOCAL_DISK_PANIC_TEMP=$DISK_PANIC_TEMP
-  elif [ "$(echo $ENTRIES | "$AWK" -F, '{print NF}')" -eq 2 ] ; then
+  elif [ "$(echo $ENTRIES | awk -F, '{print NF}')" -eq 2 ] ; then
     LOCAL_DISK_WARNING_TEMP=$DISK_WARNING_TEMP
-    LOCAL_DISK_PANIC_TEMP=$(echo $ENTRIES | "$AWK" -F, '{print $2}')
-  elif [ "$(echo $ENTRIES | "$AWK" -F, '{print NF}')" -eq 3 ] ; then
-    LOCAL_DISK_WARNING_TEMP=$(echo $ENTRIES | "$AWK" -F, '{print $2}')
-    LOCAL_DISK_PANIC_TEMP=$(echo $ENTRIES | "$AWK" -F, '{print $3}')
+    LOCAL_DISK_PANIC_TEMP=$(echo $ENTRIES | awk -F, '{print $2}')
+  elif [ "$(echo $ENTRIES | awk -F, '{print NF}')" -eq 3 ] ; then
+    LOCAL_DISK_WARNING_TEMP=$(echo $ENTRIES | awk -F, '{print $2}')
+    LOCAL_DISK_PANIC_TEMP=$(echo $ENTRIES | awk -F, '{print $3}')
   fi
 }
 
 function use_hddtemp ()
 {
-  for ENTRIES in $("$GREP" "^DISK=" "$CONFIG_FILE" | "$SED" s/^DISK=// ) ; do
-  	DISK=$(echo $ENTRIES | "$AWK" -F, '{print $1}')
+  for ENTRIES in $(grep "^DISK=" "$CONFIG_FILE" | sed s/^DISK=// ) ; do
+  	DISK=$(echo $ENTRIES | awk -F, '{print $1}')
 	set_disk_entries_values $ENTRIES
-	HDD_TEMP="$($CMD_HDDTEMP $DISK | $SED s/..$// | $AWK '{print $NF}')"
+	HDD_TEMP="$($CMD_HDDTEMP $DISK | sed s/..$// | awk '{print $NF}')"
 	if [ ! "$(echo $HDD_TEMP | grep "^[ [:digit:] ]*$")" ] ; then
 		RED=1
 		LINE="&red Disk $DISK temperature is UNKNOWN (HDD_TEMP VALUE IS : $HDD_TEMP).
@@ -130,16 +122,16 @@ done
 
 function use_smartctl ()
 {
-SMARTCTL_CHIPSET="$($GREP ^SMARTCTL_CHIPSET= $CONFIG_FILE | $SED s/^SMARTCTL_CHIPSET=//)"
+SMARTCTL_CHIPSET="$(grep ^SMARTCTL_CHIPSET= $CONFIG_FILE | sed s/^SMARTCTL_CHIPSET=//)"
 if [ $SMARTCTL_CHIPSET ] ; then
 	SMARTCTL_ARGS="-A -d $SMARTCTL_CHIPSET"
 else
 	SMARTCTL_ARGS="-A"
 fi
-for ENTRIES in $("$GREP" "^DISK=" "$CONFIG_FILE" | "$SED" s/^DISK=//) ; do
-	DISK=$(echo $ENTRIES | "$AWK" -F, '{print $1}')
+for ENTRIES in $(grep "^DISK=" "$CONFIG_FILE" | sed s/^DISK=//) ; do
+	DISK=$(echo $ENTRIES | awk -F, '{print $1}')
 	set_disk_entries_values $ENTRIES
-	HDD_TEMP="$($SMARTCTL $SMARTCTL_ARGS $DISK | $GREP "^194" | $AWK '{print $10}')"
+	HDD_TEMP="$($SMARTCTL $SMARTCTL_ARGS $DISK | grep "^194" | awk '{print $10}')"
         if [ ! "$(echo $HDD_TEMP | grep "^[ [:digit:] ]*$")" ] ; then
                 RED=1
                 LINE="&red Disk $DISK temperature is UNKNOWN (HDD_TEMP VALUE IS : $HDD_TEMP).
@@ -174,15 +166,15 @@ PANIC=$4
 #Temperature : $TEMPERATURE
 #Warning : $WARNING
 #Panic : $PANIC"
-if [ $(echo "$TEMPERATURE >= $PANIC" | "$BC") -eq 1  ] ; then
+if [ $(echo "$TEMPERATURE >= $PANIC" | bc) -eq 1  ] ; then
 	RED=1
 	LINE="&red $SOURCE temperature is CRITICAL !!! (Panic is $PANIC) :
 "$SOURCE"_temperature: $TEMPERATURE"
-elif [ $(echo "$TEMPERATURE >= $WARNING" | "$BC") -eq 1 ] ; then
+elif [ $(echo "$TEMPERATURE >= $WARNING" | bc) -eq 1 ] ; then
 	YELLOW=1
 	LINE="&yellow $SOURCE temperature is HIGH ! (Warning is $WARNING) :
 "$SOURCE"_temperature: $TEMPERATURE"
-elif [ $(echo "$TEMPERATURE < $WARNING" | "$BC") -eq 1 ] ; then
+elif [ $(echo "$TEMPERATURE < $WARNING" | bc) -eq 1 ] ; then
 	LINE="&green $SOURCE temperature is OK (Warning is $WARNING) :
 "$SOURCE"_temperature: $TEMPERATURE"
 fi
@@ -198,11 +190,11 @@ MIN=$3
 #echo "Source : $SOURCE
 #RPM : $RPM
 #MIN : $MIN"
-if [ $(echo "$RPM <= $MIN" |"$BC") -eq 1 ] ; then
+if [ $(echo "$RPM <= $MIN" |bc) -eq 1 ] ; then
 	RED=1
 	LINE="&red $SOURCE RPM speed is critical !!! (Lower or equal to $MIN) :
 "$SOURCE"_rpm: $RPM"
-elif [ $(echo "$RPM > $MIN" |"$BC") -eq 1 ] ; then
+elif [ $(echo "$RPM > $MIN" |bc) -eq 1 ] ; then
 	LINE="&green $SOURCE RPM is OK (Higher than $MIN) :
 "$SOURCE"_rpm: $RPM"
 fi
@@ -220,15 +212,15 @@ MAX=$4
 #Volt : $VOLT
 #Min : $MIN
 #Max : $MAX"
-if [ $(echo "$VOLT < $MIN" | "$BC") -eq 1 ] || [ $(echo "$VOLT > $MAX" | "$BC") -eq 1 ] ; then
+if [ $(echo "$VOLT < $MIN" | bc) -eq 1 ] || [ $(echo "$VOLT > $MAX" | bc) -eq 1 ] ; then
 	RED=1
 	LINE="&red $SOURCE voltage is OUT OF RANGE !!! (between $MIN and $MAX) :
 "$SOURCE"_volt: $VOLT"
-elif [ $(echo "$VOLT == $MIN" |"$BC") -eq 1 ] || [ $(echo "$VOLT == $MAX" |"$BC") -eq 1 ] ; then
+elif [ $(echo "$VOLT == $MIN" |bc) -eq 1 ] || [ $(echo "$VOLT == $MAX" |bc) -eq 1 ] ; then
 	YELLOW="1"
 	LINE="&yellow $SOURCE voltage is very NEAR OF LIMITS ! (between $MIN and $MAX) :
 "$SOURCE"_volt: $VOLT"
-elif [ $(echo "$VOLT > $MIN" |"$BC") -eq 1 ] && [ $(echo "$VOLT < $MAX" |"$BC") -eq 1 ] ; then
+elif [ $(echo "$VOLT > $MIN" |bc) -eq 1 ] && [ $(echo "$VOLT < $MAX" |bc) -eq 1 ] ; then
 	LINE="&green $SOURCE voltage is OK (between $MIN and $MAX) :
 "$SOURCE"_volt: $VOLT"
 fi
@@ -239,60 +231,60 @@ unset MIN MAX PANIC VALUE WARNING
 function find_type ()
 {
 LINE=$1
-echo "$LINE" | "$GREP" -q "in[0-9]"
+echo "$LINE" | grep -q "in[0-9]"
         if [ $? -eq 0 ] ; then
-                TYPE=volt
+            TYPE=volt
         else
-                echo "$LINE" | "$GREP" -q "fan[0-9]"
-                if [ $? -eq 0 ] ; then
-                        TYPE=fan
-                        else
-                                echo "$LINE" |"$GREP" -q "temp[0-9]"
-                                if [ $? -eq 0 ] ; then
-                                        TYPE=temp
-                                fi
-                fi
+            echo "$LINE" | grep -q "fan[0-9]"
+            if [ $? -eq 0 ] ; then
+               TYPE=fan
+            else
+               echo "$LINE" |grep -q "temp[0-9]"
+               if [ $? -eq 0 ] ; then
+                   TYPE=temp
+               fi
+            fi
         fi
-#	echo "Type : $TYPE"
+echo "Type : $TYPE"
 }
 
 function use_lmsensors ()
 {
-SENSOR_PROBE="$($GREP ^SENSOR_PROBE= $CONFIG_FILE | $SED s/^SENSOR_PROBE=//)"
+SENSOR_PROBE="$(grep ^SENSOR_PROBE= $CONFIG_FILE | sed s/^SENSOR_PROBE=//)"
 if [ -z $SENSOR_PROBE ] ; then
 	echo "No sensor probe configured"
 	break
 fi
 
-"$SENSORS" -uA "$SENSOR_PROBE" | "$GREP" : | "$GREP" -v beep_enable | $GREP -v "alarm" | $GREP -v "type" > "$TMP_FILE"
+"$SENSORS" -uA "$SENSOR_PROBE" | grep : | grep -v beep_enable | grep -v "alarm" | grep -v "type" > "$TMP_FILE"
 while read SENSORS_LINE ; do
 #echo 	"Ligne : $SENSORS_LINE"
-	echo $SENSORS_LINE | "$AWK" -F: '{print $2}' | "$GREP" -q "[0-9]"
+	echo $SENSORS_LINE | grep -q ":$"
 
-	if [ $? -ne 0 ] ; then
-		TITLE=$(echo $SENSORS_LINE | "$AWK" -F: '{print $1}' | $SED 's/\ /_/g' |$SED 's/^-/Negative_/' |$SED 's/^+/Positive_/')
+	if [ $? -eq 0 ] ; then
+		TITLE=$(echo $SENSORS_LINE | awk -F: '{print $1}' | sed 's/\ /_/g' |sed 's/^-/Negative_/' |sed 's/^+/Positive_/')
 #		echo "Title : $TITLE"
 	else
 		find_type "$SENSORS_LINE"
-		echo $SENSORS_LINE | "$GREP" -q "input:"
+		echo $SENSORS_LINE | grep -q "input:"
 			if [ $? -eq 0 ] ; then
-				VALUE=$(echo $SENSORS_LINE | "$AWK" '{print $2}')
+				VALUE=$(echo $SENSORS_LINE | awk '{print $2}')
 #				echo "Value : $VALUE"
 			fi
-		echo $SENSORS_LINE |"$GREP" -q "_max:"
+		echo $SENSORS_LINE |grep -q "_max:"
 			if [ $? -eq 0 ] ; then
-				PANIC=$(echo $SENSORS_LINE | "$AWK" '{print $2}')
+				PANIC=$(echo $SENSORS_LINE | awk '{print $2}')
 				MAX=$PANIC
 #				echo  "Panic : $PANIC"
 			fi
-		echo $SENSORS_LINE |"$GREP" -q "_max_hyst:"
+		echo $SENSORS_LINE |grep -q "_max_hyst:"
 			if [ $? -eq 0 ] ; then
-				WARNING=$(echo $SENSORS_LINE | "$AWK" '{print $2}')
+				WARNING=$(echo $SENSORS_LINE | awk '{print $2}')
 #				echo "Warning : $WARNING"
 			fi
-		echo $SENSORS_LINE |"$GREP" -q "_min:"
+		echo $SENSORS_LINE |grep -q "_min:"
 			if [ $? -eq 0 ] ; then
-                        	MIN=$(echo $SENSORS_LINE | "$AWK" '{print $2}')
+                        	MIN=$(echo $SENSORS_LINE | awk '{print $2}')
 #				echo "Min : $MIN"
 	                fi
 			if [ "$TYPE" == "volt" ] && [ "$MIN" ] && [ $VALUE ] && [ $MAX ] ; then
@@ -311,9 +303,9 @@ function use_openmanage ()
 {
 rm -f ${XYMONTMP}/xymon-hardware_volts.tmp ${XYMONTMP}/xymon-hardware_fans.tmp ${XYMONTMP}/xymon-hardware_disks.tmp
 #Tests temperatures :
-	CHASSIS_TEMP=$($OMREPORT chassis temps | grep Reading |awk '{print $3}' | $AWK -F\. '{print $1}')
-	CHASSIS_TEMP_WARNING=$($OMREPORT chassis temps | grep "Maximum Warning Threshold" |awk '{print $5}' | $AWK -F\. '{print $1}' )
-	CHASSIS_TEMP_ALERT=$($OMREPORT chassis temps | grep "Maximum Failure Threshold" |awk '{print $5}' | $AWK -F\. '{print $1}')
+	CHASSIS_TEMP=$($OMREPORT chassis temps | grep Reading |awk '{print $3}' | awk -F\. '{print $1}')
+	CHASSIS_TEMP_WARNING=$($OMREPORT chassis temps | grep "Maximum Warning Threshold" |awk '{print $5}' | awk -F\. '{print $1}' )
+	CHASSIS_TEMP_ALERT=$($OMREPORT chassis temps | grep "Maximum Failure Threshold" |awk '{print $5}' | awk -F\. '{print $1}')
 	if [ $CHASSIS_TEMP_WARNING -ge $CHASSIS_TEMP_ALERT ] ; then
 		echo "Erreur, la valeur CHASSIS_TEMP_WARNING est superieure ou egale a CHASSIS_TEMP_ALERT !!!"
 		exit 2
@@ -436,57 +428,57 @@ fi
 function use_hpacucli ()
 {
 $HPACUCLI ctrl all show config | grep drive | while read OUTPUT ; do
-        TYPE=$(echo $OUTPUT | awk '{print $1}' | sed s/drive//)
-        SLOT=$(echo $OUTPUT | awk '{print $2}')
-        STATUS=$(echo $OUTPUT | awk '{print $NF}' | sed s/\)//)
+  TYPE=$(echo $OUTPUT | awk '{print $1}' | sed s/drive//)
+  SLOT=$(echo $OUTPUT | awk '{print $2}')
+  STATUS=$(echo $OUTPUT | awk '{print $NF}' | sed s/\)//)
 	if [ "$STATUS" == "spare" ] ; then
-                STATUS=$(echo $OUTPUT | cut -d',' -f4 | sed 's/ //g')
-        fi
-        if [ $TYPE == "logical" ] ; then
-                RAID=$(echo $OUTPUT | awk '{print $6}')
-                SIZE=$(echo $OUTPUT | awk '{print $3 $4}' | sed s/\(// | sed s/\,//)
-                if [ "$STATUS" != "OK" ] ; then
-                        RED=1
-                        LINE="&red Logical drive $SLOT \(RAID $RAID, size : $SIZE\) status is BAD !!!"
-                elif [ "$STATUS" == "OK" ] ; then
-                        LINE="&green Logical drive $SLOT \(RAID $RAID, size : $SIZE\) status is OK"
-                else
-                        RED=1
-                        LINE="&red Unknow status \(or stupid monitoring script\) for logical drive $SLOT \(RAID $RAID, size : $SIZE\) !!!"
-                fi
-        elif [ "$TYPE" == "physical" ] ; then
-                SIZE=$(echo $OUTPUT | awk '{print $8 $9}' | sed s/\,//)
-                if [ "$STATUS" != "OK" ] ; then
-                        YELLOW=1
-                        LINE="&yellow Physical drive in slot $SLOT \(size : $SIZE\) status is BAD !!!"
-                elif [ "$STATUS" == "OK" ] ; then
-                        LINE="&green Physical drive in slot $SLOT \(size : $SIZE\) status is OK"
-                else
-                        RED=1
-                        LINE="&red Unknow status \(or stupid monitoring script\) for physical drive in slot $SLOT \(size : $SIZE\) !!!"
-                fi
-        fi
-        echo $LINE >> $MSG_FILE
+      STATUS=$(echo $OUTPUT | cut -d',' -f4 | sed 's/ //g')
+  fi
+  if [ $TYPE == "logical" ] ; then
+      RAID=$(echo $OUTPUT | awk '{print $6}')
+      SIZE=$(echo $OUTPUT | awk '{print $3 $4}' | sed s/\(// | sed s/\,//)
+      if [ "$STATUS" != "OK" ] ; then
+          RED=1
+          LINE="&red Logical drive $SLOT \(RAID $RAID, size : $SIZE\) status is BAD !!!"
+      elif [ "$STATUS" == "OK" ] ; then
+          LINE="&green Logical drive $SLOT \(RAID $RAID, size : $SIZE\) status is OK"
+      else
+          RED=1
+          LINE="&red Unknow status \(or stupid monitoring script\) for logical drive $SLOT \(RAID $RAID, size : $SIZE\) !!!"
+      fi
+  elif [ "$TYPE" == "physical" ] ; then
+      SIZE=$(echo $OUTPUT | awk '{print $8 $9}' | sed s/\,//)
+      if [ "$STATUS" != "OK" ] ; then
+         YELLOW=1
+         LINE="&yellow Physical drive in slot $SLOT \(size : $SIZE\) status is BAD !!!"
+      elif [ "$STATUS" == "OK" ] ; then
+         LINE="&green Physical drive in slot $SLOT \(size : $SIZE\) status is OK"
+      else
+         RED=1
+         LINE="&red Unknow status \(or stupid monitoring script\) for physical drive in slot $SLOT \(size : $SIZE\) !!!"
+      fi
+  fi
+  echo $LINE >> $MSG_FILE
 done
 }
 
-$GREP -q ^HPACUCLI=1 $CONFIG_FILE
+grep -q ^HPACUCLI=1 $CONFIG_FILE
 if [ $? -eq 0 ] ; then
         use_hpacucli
 fi
-$GREP -q ^SMARTCTL=1 $CONFIG_FILE
+grep -q ^SMARTCTL=1 $CONFIG_FILE
 if [ $? -eq 0 ] ; then
 	use_smartctl
 fi
-$GREP -q ^HDDTEMP=1 $CONFIG_FILE
-if [ $? -eq 0 ] ; then
-	use_hddtemp
-fi
-$GREP -q ^OPENMANAGE=1 $CONFIG_FILE
+grep -q ^HDDTEMP=1 $CONFIG_FILE
+#if [ $? -eq 0 ] ; then
+#	use_hddtemp
+#fi
+grep -q ^OPENMANAGE=1 $CONFIG_FILE
 if [ $? -eq 0 ] ; then
 	use_openmanage
 fi
-$GREP -q ^SENSOR=1 $CONFIG_FILE
+grep -q ^SENSOR=1 $CONFIG_FILE
 if [ $? -eq 0 ] ; then
 	use_lmsensors
 fi
@@ -497,7 +489,7 @@ elif [ "$YELLOW" ] ; then
 else
 	FINAL_STATUS=green
 fi
-"$BB" "$BBDISP" "status "$MACHINE"."$TEST" "$FINAL_STATUS" $("$DATE")
+"$BB" "$BBDISP" "status "$MACHINE"."$TEST" "$FINAL_STATUS" $(date)
 
-$("$CAT" "$MSG_FILE")
+$(cat "$MSG_FILE")
 "
