@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8
 
 import datetime
@@ -29,7 +29,6 @@ ground_humidity_warn_max = float(config['humidity']['ground_humidity_warn_max'])
 ground_humidity_alarm_min = float(config['humidity']['ground_humidity_alarm_min'])
 ground_humidity_alarm_max = float(config['humidity']['ground_humidity_alarm_max'])
 
-
 floor_temp_warn_min = float(config['temperature']['floor_temp_warn_min'])
 floor_temp_warn_max = float(config['temperature']['floor_temp_warn_max'])
 floor_temp_alarm_min = float(config['temperature']['floor_temp_alarm_min'])
@@ -48,8 +47,17 @@ veranda_humidity_warn_max = float(config['humidity']['veranda_humidity_warn_max'
 veranda_humidity_alarm_min = float(config['humidity']['veranda_humidity_alarm_min'])
 veranda_humidity_alarm_max = float(config['humidity']['veranda_humidity_alarm_max'])
 
+garage_temp_warn_min = float(config['temperature']['garage_temp_warn_min'])
+garage_temp_warn_max = float(config['temperature']['garage_temp_warn_max'])
+garage_temp_alarm_min = float(config['temperature']['garage_temp_alarm_min'])
+garage_temp_alarm_max = float(config['temperature']['garage_temp_alarm_max'])
+garage_humidity_warn_min = float(config['humidity']['garage_humidity_warn_min'])
+garage_humidity_warn_max = float(config['humidity']['garage_humidity_warn_max'])
+garage_humidity_alarm_min = float(config['humidity']['garage_humidity_alarm_min'])
+garage_humidity_alarm_max = float(config['humidity']['garage_humidity_alarm_max'])
+
 #get_values
-with open(_Source_File, 'rb') as f:
+with open(_Source_File, 'r') as f:
 	for row in f:
 		if row == "No data received from WeatherStation":
 			sys.exit(1)
@@ -61,6 +69,9 @@ with open(_Source_File, 'rb') as f:
 		floor_humidity = float(row.split(',')[5])
 		veranda_temp = float(row.split(',')[6])
 		veranda_humidity = float(row.split(',')[7])
+    garage_temp = float(row.split(',')[7])
+		garage_humidity = float(row.split(',')[8])
+
 f.close()
 #check_values
 ##ground_floor
@@ -161,6 +172,40 @@ elif veranda_humidity < veranda_humidity_warn_min:
 	veranda_humidity_color = "yellow"
 else:
 	veranda_humidity_color = "green"	
+
+##Garage
+###temperature
+if garage_temp > garage_temp_alarm_max:
+  red = 1
+  garage_temp_color = "red"
+elif garage_temp > garage_temp_warn_max:
+  yellow = 1
+  garage_temp_color = "yellow"
+elif garage_temp < garage_temp_alarm_min:
+  red = 1
+  garage_temp_color = "red"
+elif garage_temp < garage_temp_warn_min:
+  yellow = 1
+  garage_temp_color = "yellow"
+else:
+  garage_temp_color = "green"
+
+###humidity
+if garage_humidity > garage_humidity_alarm_max:
+  red = 1
+  garage_humidity_color = "red"
+elif garage_humidity > garage_humidity_warn_max:
+  yellow = 1
+  garage_humidity_color = "yellow"
+elif garage_humidity < garage_humidity_alarm_min:
+  red = 1
+  garage_humidity_color = "red"
+elif garage_humidity < garage_humidity_warn_min:
+  yellow = 1
+  garage_humidity_color = "yellow"
+else:
+  garage_humidity_color = "green"
+
 
 #Generate global status:
 if red == 1:
