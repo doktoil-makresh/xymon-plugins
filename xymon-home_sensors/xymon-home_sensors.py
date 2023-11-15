@@ -38,6 +38,17 @@ class Sensor:
 			"humidity": Variable("humidity")
 		}
 
+	def __str__(self):
+		return "\n".join(["%s_%s: %.1f" % (self.name.capitalize(), v.name, v.value) for v in self.variables.values()])
+
+class ThresholdSensor(Sensor):
+	def __init__(self, name):
+		super().__init__(name)
+		self.read_thresholds()
+
+	def __str__(self):
+		return "\n".join(["&%s%s_%s: %.1f" % (v.color, self.name.capitalize(), v.name, v.value) for v in self.variables.values()])
+
 	def read_thresholds(self):
 		for k in self.variables:
 			v = self.variables[k]
@@ -45,13 +56,10 @@ class Sensor:
 			self.variables[k].thresholds['warning'] = (float(config[k][self.name + "_" + v.name + "_warn_min"]), float(config[k][self.name + "_" + v.name + "_warn_max"]))
 			self.variables[k].thresholds['alarm'] = (float(config[k][self.name + "_" + v.name + "_alarm_min"]), float(config[k][self.name + "_" + v.name + "_alarm_max"]))
 
-	def __str__(self):
-		return "\n".join(["&%s%s_%s: %.1f" % (v.color, self.name.capitalize(), v.name, v.value) for v in self.variables.values()])
-
 sensors = {
-	"ground": Sensor('ground'),
-	"floor": Sensor('floor'),
-	"veranda": Sensor('veranda'),
+	"ground": ThresholdSensor('ground'),
+	"floor": ThresholdSensor('floor'),
+	"veranda": ThresholdSensor('veranda'),
 	"outdoor": Sensor('outdoor')
 }
 
@@ -62,9 +70,6 @@ _status = "green"
 _test = "home_sensors"
 now=datetime.datetime.now()
 _date=now.strftime("%a %d %b %Y %H:%M:%S %Z")
-
-for sensor in sensors.values():
-	sensor.read_thresholds()
 
 #get_values
 with open(_Source_File, 'r') as f:
