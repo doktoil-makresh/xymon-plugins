@@ -13,6 +13,7 @@
 ===== Description =====
 
 This script will read data from Xiaomi Mijia sensors
+Based on https://www.fanjoe.be/?p=3911 (French website)
 
 ===== Installation =====
 

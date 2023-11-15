@@ -17,18 +17,34 @@ if [ "$1" == "debug" ] ; then
         XYMONCLIENTHOME="/usr/lib/xymon/client"
         MACHINE=$(hostname)
 fi
+
+MIJIA_JSON=${XYMONCLIENTHOME}/etc/mijia.json
 tmp_file=${XYMONTMP}/xymon_mijia_$$
 
 TEST=mijia
 red=0
 Name=$1
-echo "Reading sensor data for $Name..."
-hnd38=$(timeout 15 gatttool -b $MACadd --char-write-req --handle='0x0038' --value="0100" --listen | grep --max-count=1 "Notification handle")
-# Notification handle = 0x0036 value: 7c 08 2a 97 0c
-
-
-if !([ -z "$hnd38" ])
-then
+#Set default battery threshold
+Battery_Critical=$(jq ".battery.critical" $MIJIA_JSON)
+Battery_Warning=$(jq ".battery.warning" $MIJIA_JSON)
+#For each sensor
+for sensor in $(jq -r ".sensors | keys[] " $MIJIA_JSON) ;do
+  echo "sensor: $sensor"
+  unset temperature humidity temp_color humidity_color
+  Sensor_Name=$sensor
+  Sensor_MacAddress=$(jq -r ".sensors.${sensor}.MACadd" $MIJIA_JSON)
+  Sensor_Temp_High_Warning=$(jq ".sensors.${sensor}.Data.Temperature.high.warning // empty" $MIJIA_JSON)
+  Sensor_Temp_High_Critical=$(jq ".sensors.${sensor}.Data.Temperature.high.critical // empty" $MIJIA_JSON)
+  Sensor_Temp_Low_Warning=$(jq ".sensors.${sensor}.Data.Temperature.low.warning  // empty" $MIJIA_JSON)
+  Sensor_Temp_Low_Critical=$(jq ".sensors.${sensor}.Data.Temperature.low.critical // empty" $MIJIA_JSON)
+  Sensor_Humidity_High_Warning=$(jq ".sensors.${sensor}.Data.Humidity.high.warning // empty" $MIJIA_JSON)
+  Sensor_Humidity_High_Critical=$(jq ".sensors.${sensor}.Data.Humidity.high.critical // empty" $MIJIA_JSON)
+  Sensor_Humidity_Low_Warning=$(jq ".sensors.${sensor}.Data.Humidity.low.warning // empty" $MIJIA_JSON)
+  Sensor_Humidity_Low_Critical=$(jq ".sensors.${sensor}.Data.Humidity.low.critical // empty" $MIJIA_JSON)
+  sensor_color="green"
+  battery_color="green"
+  #Get values
+  hnd38=$(timeout 15 gatttool -b $Sensor_MacAddress --char-write-req --handle='0x0038' --value="0100" --listen | grep --max-count=1 "Notification handle")
 
 	temperature=${hnd38:39:2}${hnd38:36:2}
 	temperature=$((16#$temperature))
@@ -41,47 +57,97 @@ then
 	humidity=${hnd38:42:2}
 	humidity=$((16#$humidity))
 
-	voltage=${hnd38:48:2}${hnd38:45:2}
-	voltage=$((16#$voltage))
-	voltage=$(echo "scale=3;$voltage/1000" | bc)
+	battery=${hnd38:48:2}${hnd38:45:2}
+	battery=$((16#$battery))
+	battery=$(echo "scale=3;$battery/1000" | bc)
 
 
 	# Battery Level : 0x2A19
 	# handle = 0x001b, uuid = 00002a19-0000-1000-8000-00805f9b34fb
 
-		hnd1b=$(gatttool --device=$MACadd --char-read -a 0x1b)
-		# Characteristic value/descriptor: 63
-		battery=${hnd1b:33:2}
-		battery=$((16#$battery))
+	hnd1b=$(gatttool --device=$Sensor_MacAddress --char-read -a 0x1b)
+	# Characteristic value/descriptor: 63
+	battery=${hnd1b:33:2}
+	battery=$((16#$battery))
+   #Compare values
+   #Temperature
 
-	# Firmware Revision String : 0x2A26
-	# handle = 0x0012, uuid = 00002a26-0000-1000-8000-00805f9b34fb
+   if [ -n "$Sensor_Temp_High_Critical" ]; then
+  temp_color="&green"
+     if (( $(echo "$temperature > $Sensor_Temp_High_Critical" |bc -l) )); then
+       red=1
+       temp_color="&red"
+     fi
+   elif [ -n "$Sensor_Temp_High_Warning" ]; then
+     if (( $(echo "$temperature > $Sensor_Temp_High_Warning" |bc -l) )); then
+       yellow=1
+       temp_color="&yellow"
+     fi
+   elif [ -n "$Sensor_Temp_Low_Critical" ]; then
+     if (( $(echo "$temperature < $Sensor_Temp_Low_Critical" |bc -l) )); then
+       red=1
+       temp_color="&red"
+     fi
+   elif [ -n "$Sensor_Temp_Low_Warning" ]; then
+     if (( $(echo "$temperature < $Sensor_Temp_Low_Warning" |bc -l) )); then
+     yellow=1
+     temp_color="&yellow"
+     fi
+   fi
 
-		hnd12=$(gatttool --device=$MACadd --char-read -a 0x12)
-		# Characteristic value/descriptor: 31 2e 30 2e 30 5f 30 31 30 36 00
-		firmware=$(echo "'$hnd12'" | cut -c34-65 | xxd -r -p)
+   #Humidity
+   if [ -n "$Sensor_Humidity_High_Critical" ]; then
+  humidity_color="&green"
+     if (( $(echo "$humidity > $Sensor_Humidity_High_Critical" |bc -l) )); then
+       red=1
+       humidity_color="&red"
+     fi
+   elif [ -n "$Sensor_Humidity_High_Warning" ]; then
+     if (( $(echo "$humidity > $Sensor_Humidity_High_Warning" |bc -l) )); then
+       yellow=1
+       humidity_color="&yellow"
+     fi
+   elif [ -n "$Sensor_Humidity_Low_Critical" ]; then
+     if (( $(echo "$humidity < $Sensor_Humidity_Low_Critical" |bc -l) )); then
+       red=1
+       humidity_color="&red"
+     fi
+   elif [ -n "$Sensor_Humidity_Low_Warning" ]; then
+     if (( $(echo "$humidity < $Sensor_Humidity_Low_Warning" |bc -l) )); then
+       yellow=1
+       humidity_color="&yellow"
+     fi
+   fi
 
+   #Battery
+   if (( $(echo "$battery < $Battery_Critical" |bc -l) )); then
+     red=1
+     battery_color="red"
+   elif (( $(echo "$battery < $Battery_Warning" |bc -l) )); then
+     yellow=1
+     battery_color="yellow"
+   fi
 
-	# Device Name : 0x2A00
-	# handle = 0x0003, uuid = 00002a00-0000-1000-8000-00805f9b34fb
+   echo "$Sensor_Name sensor status:
+&$battery_color Battery: $battery
+$temp_color Temperature: $temperature
+$humidity_color Humidity: $humidity
+" >> $tmp_file
+done
 
-		hnd03=$(gatttool --device=$MACadd --char-read -a 0x03)
-		# Characteristic value/descriptor: 4c 59 57 53 44 30 33 4d 4d 43 00
-		name=$(echo "'$hnd03'" | cut -c34-65 | xxd -r -p)
-
-
-	# Hardware Revision String : 0x2A27
-	# handle = 0x0014, uuid = 00002a27-0000-1000-8000-00805f9b34fb
-
-		hnd14=$(gatttool --device=$MACadd --char-read -a 0x14)
-		# Characteristic value/descriptor: 42 31 2e 34
-		revision=$(echo "'$hnd14'" | cut -c34-45 | xxd -r -p)
-
-	# Affichage des données
-
-		echo "${Name}_temp: $temperature
-${Name}_humidity: $humidity
-${Name}_battery: $battery"
+#Define general status
+if [ $red -eq 1]; then
+  status="red"
+elif [ $yellow -eq 1 ]; then
+  status="yellow"
 else
-	echo "Mijia error"
+  status="green"
 fi
+
+#Send message to Xymon server
+"$XYMON" "$XYMSRV" "status "$MACHINE"."$TEST" "$status" $(date)
+
+$(cat $tmp_file)
+"
+
+rm $tmp_file

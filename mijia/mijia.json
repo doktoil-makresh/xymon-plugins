@@ -1,0 +1,158 @@
+{
+  "battery":{
+    "warning" : 10,
+    "critical": 5
+  },
+  "sensors":{
+    "Veranda":{
+      "MACadd":"A4:C1:38:74:F9:AE",
+      "Data":{
+        "Temperature":{
+          "high":{
+            "warning": 35,
+            "critical": 45
+          },
+          "low":{
+            "warning": 10,
+            "critical": 5
+          }
+        },
+        "Humidity":{
+          "high":{
+            "warning": 70,
+            "critical": 80
+          },
+          "low":{
+            "warning": 50,
+            "critical": 40
+          }
+        }
+      }
+    },
+    "Bureau":{
+      "MACadd":"A4:C1:38:5B:35:92",
+      "Data":{
+        "Temperature":{
+          "high":{
+            "warning": 28,
+            "critical": 35
+          },
+          "low":{
+            "warning": 17,
+            "critical": 15
+          }
+        },
+        "Humidity":{
+          "high":{
+            "warning": 65,
+            "critical": 70
+          },
+          "low":{
+            "warning": 55,
+            "critical": 50
+          }
+        }
+      }
+    },
+    "Dehors":{
+      "MACadd":"A4:C1:38:B2:1C:B0",
+      "Data":{
+        "Temperature":{
+          "high":{
+            "warning":null,
+            "critical":null 
+          },
+          "low":{
+            "warning":null,
+            "critical":null
+          }
+        },
+        "Humidity":{
+          "high":{
+            "warning":90,
+            "critical":95 
+          },
+          "low":{
+            "warning":null,
+            "critical":null 
+          }
+        }
+      }
+    },
+    "Etage":{
+      "MACadd":"A4:C1:38:54:BA:C5",
+      "Data":{
+        "Temperature":{
+          "high":{
+            "warning": 25,
+            "critical": 30
+          },
+          "low":{
+            "warning": 17,
+            "critical": 15 
+          }
+        },
+        "Humidity":{
+          "high":{
+            "warning": 65,
+            "critical": 70
+          },
+          "low":{
+            "warning": 55,
+            "critical": 50
+          }
+        }
+      }
+    },
+    "Garage":{
+      "MACadd":"A4:C1:38:44:DC:A8",
+      "Data":{
+         "Temperature":{
+          "high":{
+            "warning": 35,
+            "critical": 45
+          },
+          "low":{
+            "warning": 15,
+            "critical": 10
+          }
+        },
+        "Humidity":{
+          "high":{
+            "warning": 70,
+            "critical": 80
+            },
+          "low":{
+            "warning": 50,
+            "critical": 40
+          }
+        }
+      }
+    },
+    "Velo":{
+      "MACadd":"A4:C1:38:F8:D3:02",
+      "Data":{
+        "Temperature":{
+          "high":{
+            "warning":null,
+            "critical":null
+          },
+          "low":{
+            "warning":null,
+            "critical":null
+          }
+        },
+        "Humidity":{
+          "high":{
+           "warning": 70,
+           "critical": 80
+          },
+          "low":{
+            "warning":null,
+            "critical":null 
+          }
+        }
+      }
+    }
+  }
+}
