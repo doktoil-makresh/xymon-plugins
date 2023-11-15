@@ -34,4 +34,8 @@ Descriptions:
 
 -xymon-home_sensors : check sensors values based on Oregon Scientific bluetooth weather station
 
+-btrfs: monitors BTRFS formated partitions, reports errors
+
+-mijia: readis Xiaomi Mijia sensors data and reports errors based on user's defined thresholds
+
 Each script includes its own readme content in the head of the file

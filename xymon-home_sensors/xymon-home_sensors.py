@@ -52,7 +52,7 @@ sensors = {
 	"ground": Sensor('ground'),
 	"floor": Sensor('floor'),
 	"veranda": Sensor('veranda'),
-	"garage": Sensor('garage')
+	"outdoor": Sensor('outdoor')
 }
 
 #Define variables from config file
@@ -74,12 +74,12 @@ with open(_Source_File, 'r') as f:
 		values = [float(x) for x in row.split(",")]
 		sensors['ground'].variables['temperature'].value = values[0]
 		sensors['ground'].variables['humidity'].value = values[1]
-		sensors['floor'].variables['temperature'].value = values[2]
-		sensors['floor'].variables['humidity'].value = values[3]
-		sensors['veranda'].variables['temperature'].value = values[4]
-		sensors['veranda'].variables['humidity'].value = values[5]
-		sensors['garage'].variables['temperature'].value = values[6]
-		sensors['garage'].variables['humidity'].value = values[7]
+		sensors['outdoor'].variables['temperature'].value = values[2]
+		sensors['outdoor'].variables['humidity'].value = values[3]
+		sensors['floor'].variables['temperature'].value = values[4]
+		sensors['floor'].variables['humidity'].value = values[5]
+		sensors['veranda'].variables['temperature'].value = values[6]
+		sensors['veranda'].variables['humidity'].value = values[7]
 
 # Check for colors
 for sensor in sensors.values():
@@ -89,11 +89,10 @@ for sensor in sensors.values():
 		elif variable.color == "yellow" and _status != "red":
 			_status = "yellow"
 
+_msg_line="\n".join([str(sensor) for sensor in sensors.values()])
 if debug:
-	_msg_line="\n".join([str(sensor) for sensor in sensors.values()])
 	print(_msg_line)
 else:
-	_msg_line="&%sIndoor_temp: %s\n&%sIndoor_humidity: %s\n&%sFloor_temp: %s\n&%sFloor_humidity: %s\n&%sVeranda_temp: %s\n&%sVeranda_humidity: %s\nOutdoor_temp: %s\nOutdoor_humidity: %s\n" % (ground_temp_color, ground_temp, ground_humidity_color, ground_humidity, floor_temp_color, floor_temp, floor_humidity_color, floor_humidity, veranda_temp_color, veranda_temp, veranda_humidity_color, veranda_humidity, outdoor_temp, outdoor_humidity)
 	_cmd_line="%s %s \"status %s.%s %s %s\n\n%s\"" %(os.environ['XYMON'], os.environ['XYMSRV'], os.environ['MACHINE'], _test, _status, _date, _msg_line)
 	#Lancement commande 
 	os.system(_cmd_line)
