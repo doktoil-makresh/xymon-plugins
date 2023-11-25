@@ -57,9 +57,11 @@ class ThresholdSensor(Sensor):
 			self.variables[k].thresholds['alarm'] = (float(config[k][self.name + "_" + v.name + "_alarm_min"]), float(config[k][self.name + "_" + v.name + "_alarm_max"]))
 
 sensors = {
-	"ground": ThresholdSensor('ground'),
-	"floor": ThresholdSensor('floor'),
+	"indoor": ThresholdSensor('indoor'),
 	"veranda": ThresholdSensor('veranda'),
+	"garage": ThresholdSensor('garage'),
+	"salledo": ThresholdSensor('salledo'),
+	"floor": ThresholdSensor('floor'),
 	"outdoor": Sensor('outdoor')
 }
 
@@ -77,14 +79,18 @@ with open(_Source_File, 'r') as f:
 		if row == "No data received from WeatherStation":
 			sys.exit(1)
 		values = [float(x) for x in row.split(",")]
-		sensors['ground'].variables['temperature'].value = values[0]
-		sensors['ground'].variables['humidity'].value = values[1]
+		sensors['indoor'].variables['temperature'].value = values[0]
+		sensors['indoor'].variables['humidity'].value = values[1]
 		sensors['outdoor'].variables['temperature'].value = values[2]
 		sensors['outdoor'].variables['humidity'].value = values[3]
 		sensors['floor'].variables['temperature'].value = values[4]
 		sensors['floor'].variables['humidity'].value = values[5]
 		sensors['veranda'].variables['temperature'].value = values[6]
 		sensors['veranda'].variables['humidity'].value = values[7]
+		sensors['garage'].variables['temperature'].value = values[8]
+		sensors['garage'].variables['humidity'].value = values[9]
+		sensors['salledo'].variables['temperature'].value = values[10]
+		sensors['salledo'].variables['humidity'].value = values[11]
 
 # Check for colors
 for sensor in sensors.values():

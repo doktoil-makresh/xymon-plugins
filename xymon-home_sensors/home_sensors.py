@@ -1,4 +1,4 @@
-#!/usr/bin/python2.7
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 # Connect to Oregon Scientific BLE Weather Station
 # Copyright (c) 2016 Arnaud Balmelle
@@ -27,8 +27,6 @@ from bluepy.btle import *
 #import urllib2
 #import urllib
 #import os
-
-_test = "home_sensors"
 
 #Enregistrement de la date du jour
 #now=datetime.datetime.now()
@@ -83,7 +81,7 @@ class WeatherStation:
 
                 regs = self.p.delegate.getData()
                 if regs is not None:
-			print(len(regs['data_type0']), len(regs['data_type1']))
+#  print(len(regs['data_type0']), len(regs['data_type1']), len(regs['data_type2']), len(regs['data_type3']))
                         # expand INDOOR_AND_CH1_TO_3_TH_DATA_TYPE0
                         self._data['index0_temperature'] = ''.join(regs['data_type0'][4:6] + regs['data_type0'][2:4])
                         self._data['index1_temperature'] = ''.join(regs['data_type0'][8:10] + regs['data_type0'][6:8])
@@ -112,6 +110,20 @@ class WeatherStation:
                         self._data['index2_temperature_min'] = ''.join(regs['data_type1'][30:32] + regs['data_type1'][28:30])
                         self._data['index3_temperature_max'] = ''.join(regs['data_type1'][34:36] + regs['data_type1'][32:34])
                         self._data['index3_temperature_min'] = ''.join(regs['data_type1'][38:40] + regs['data_type1'][36:38])
+                        # expand CH4_AND_CH4_TO_2_TH_DATA_TYPE0
+                        self._data['index4_temperature'] = ''.join(regs['data_type2'][4:6] + regs['data_type2'][2:4])
+                        self._data['index5_temperature'] = ''.join(regs['data_type2'][8:10] + regs['data_type2'][6:8])
+                        self._data['index4_humidity'] = regs['data_type2'][18:20]
+                        self._data['index5_humidity'] = regs['data_type2'][20:22]
+                        self._data['index4_humidity_max'] = regs['data_type2'][30:32]
+                        self._data['index4_humidity_min'] = regs['data_type2'][32:34]
+                        self._data['index5_humidity_max'] = regs['data_type2'][34:36]
+                        self._data['index5_humidity_min'] = regs['data_type2'][36:38]
+                        self._data['index4_temperature_max'] = ''.join(regs['data_type3'][10:12] + regs['data_type3'][8:10])
+                        self._data['index4_temperature_min'] = ''.join(regs['data_type3'][14:16] + regs['data_type3'][12:14])
+                        self._data['index5_temperature_max'] = ''.join(regs['data_type3'][18:20] + regs['data_type3'][16:18])
+                        self._data['index5_temperature_min'] = ''.join(regs['data_type3'][22:24] + regs['data_type3'][20:22])
+                 
                         return True
                 else:
                         return None
@@ -161,6 +173,26 @@ class WeatherStation:
                         return veranda_humidity
                 else:
                         return None
+                        
+        def getGarageHumidity(self):
+                if 'index4_humidity' in self._data:
+                        garage_humidity = self.getValue('index4_humidity')
+                        max = self.getValue('index4_humidity_max')
+                        min = self.getValue('index4_humidity_min')
+                        logging.debug('Garage humidity : %.1f, max : %.1f, min : %.1f', garage_humidity, max, min)
+                        return garage_humidity
+                else:
+                        return None
+                        
+        def getSalledoHumidity(self):
+                if 'index5_humidity' in self._data:
+                        salledo_humidity = self.getValue('index5_humidity')
+                        max = self.getValue('index5_humidity_max')
+                        min = self.getValue('index5_humidity_min')
+                        logging.debug('Salledo humidity : %.1f, max : %.1f, min : %.1f', salledo_humidity, max, min)
+                        return salledo_humidity
+                else:
+                        return None
 
         def getIndoorTemp(self):
                 if 'index0_temperature' in self._data:
@@ -201,6 +233,26 @@ class WeatherStation:
 #                       logging.debug('1st veranda temp: %.1f°C, max : %.1f°C, min : %.1f°C', veranda_temp, max, min)
                         return veranda_temp
                 else:
+                       return None
+
+        def getGarageTemp(self):
+                if 'index4_temperature' in self._data:
+                        garage_temp = self.getValue('index4_temperature') / 10.0
+                        max = self.getValue('index4_temperature_max') / 10.0
+                        min = self.getValue('index4_temperature_min') / 10.0
+#                       logging.debug('1st garage temp: %.1f°C, max : %.1f°C, min : %.1f°C', garage_temp, max, min)
+                        return garage_temp
+                else:
+                        return None
+
+        def getSalledoTemp(self):
+                if 'index5_temperature' in self._data:
+                        salledo_temp = self.getValue('index5_temperature') / 10.0
+                        max = self.getValue('index5_temperature_max') / 10.0
+                        min = self.getValue('index5_temperature_min') / 10.0
+#                       logging.debug('1st salledo temp: %.1f°C, max : %.1f°C, min : %.1f°C', salledo_temp, max, min)
+                        return salledo_temp
+                else:
                         return None
 
         def disconnect(self):
@@ -211,6 +263,8 @@ class NotificationDelegate(DefaultDelegate):
                 DefaultDelegate.__init__(self)
                 self._indoorAndOutdoorTemp_type0 = None
                 self._indoorAndOutdoorTemp_type1 = None
+                self._indoorAndOutdoorTemp_type2 = None
+                self._indoorAndOutdoorTemp_type3 = None
 
         def handleNotification(self, cHandle, data):
                 formatedData = binascii.b2a_hex(data)
@@ -224,6 +278,15 @@ class NotificationDelegate(DefaultDelegate):
                                 # Type0 data packet received
                                 self._indoorAndOutdoorTemp_type0 = formatedData
                                 logging.debug('indoorAndOutdoorTemp_type0 = %s', formatedData)
+                elif cHandle == 0x0020:
+                          if formatedData[0] == '8':
+                                # Type1 data packet received
+                                self._indoorAndOutdoorTemp_type3 = formatedData
+                                logging.debug('indoorAndOutdoorTemp_type3 = %s', formatedData)
+                          else:
+                                # Type0 data packet received
+                                self._indoorAndOutdoorTemp_type2 = formatedData
+                                logging.debug('indoorAndOutdoorTemp_type2 = %s', formatedData)
                 else:
                         # skip other indications/notifications
                         logging.debug('handle %x = %s', cHandle, formatedData)
@@ -231,7 +294,7 @@ class NotificationDelegate(DefaultDelegate):
         def getData(self):
                         if self._indoorAndOutdoorTemp_type0 is not None:
                                 # return sensors data
-                                return {'data_type0':self._indoorAndOutdoorTemp_type0, 'data_type1':self._indoorAndOutdoorTemp_type1}
+                                return {'data_type0':self._indoorAndOutdoorTemp_type0, 'data_type1':self._indoorAndOutdoorTemp_type1, 'data_type2':self._indoorAndOutdoorTemp_type2, 'data_type3':self._indoorAndOutdoorTemp_type3}
                         else:
                                 return None
 
@@ -283,9 +346,13 @@ if __name__=="__main__":
                                 floor_humidity = weatherStation.getFloorHumidity()
                                 veranda_temp = weatherStation.getVerandaTemp()
                                 veranda_humidity = weatherStation.getVerandaHumidity()
+                                garage_temp = weatherStation.getGarageTemp()
+                                garage_humidity = weatherStation.getGarageHumidity()
+                                salledo_temp = weatherStation.getSalledoTemp()
+                                salledo_humidity = weatherStation.getSalledoHumidity()
                                 #Write datas to file
                                 f = open("/tmp/home_sensors", 'w')
-                                f.write(str(in_temp)+","+str(in_humidity)+","+str(out_temp)+","+str(out_humidity)+","+str(floor_temp)+","+str(floor_humidity)+","+str(veranda_temp)+","+str(veranda_humidity))
+                                f.write(str(in_temp)+","+str(in_humidity)+","+str(out_temp)+","+str(out_humidity)+","+str(floor_temp)+","+str(floor_humidity)+","+str(veranda_temp)+","+str(veranda_humidity)+","+str(garage_temp)+","+str(garage_humidity)+","+str(salledo_temp)+","+str(salledo_humidity))
                                 f.close()
                         else:
                                 f = open("/tmp/home_sensors", 'w')
