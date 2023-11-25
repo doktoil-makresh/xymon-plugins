@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/python2.7
 # -*- coding: utf-8 -*-
 # Connect to Oregon Scientific BLE Weather Station
 # Copyright (c) 2016 Arnaud Balmelle
