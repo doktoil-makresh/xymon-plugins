@@ -44,4 +44,4 @@ if [ "$RED" ] ; then
 else
 	COLOR="green"
 fi
-$BB $BBDISP "status $MACHINE.$COLUMN $COLOR $(date) $MSG_FINAL"
+$BB $BBDISP "status $MACHINE.$TEST $COLOR $(date) $MSG_FINAL"
