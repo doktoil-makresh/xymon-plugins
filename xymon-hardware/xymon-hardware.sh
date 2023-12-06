@@ -245,7 +245,7 @@ echo "$LINE" | grep -q "in[0-9]"
                fi
             fi
         fi
-echo "Type : $TYPE"
+#echo "Type : $TYPE"
 }
 
 function use_lmsensors ()
