@@ -1,10 +1,8 @@
 #!/bin/bash
 
 # ALL THIS SCRIPT IS UNDER GPL LICENSE
-# Version 0.6
 # Title:     xymon-hardware
 # Author:    Damien Martins  ( doctor |at| makelofine |dot| org)
-# Date:      2022-07-13
 # Purpose:   Check Uni* hardware sensors
 # Platforms: Uni* having lm-sensor and hddtemp utilities
 # Tested:    Xymon 4.3.4 / hddtemp version 0.3-beta15 (Debian Lenny and Etch packages) / sensors version 3.0.2 with libsensors version 3.0.2 (Debian Lenny package) / sensors version 3.0.1 with libsensors version 3.0.1 (Debian Etch package)
@@ -478,7 +476,7 @@ fi
 if [ $OPENMANAGE -eq 1 ] ; then
 	use_openmanage
 fi
-if [ $SENSOR -eq 0 ] ; then
+if [ $SENSOR -eq 1 ] ; then
 	use_lmsensors
 fi
 if [ "$RED" ] ; then
