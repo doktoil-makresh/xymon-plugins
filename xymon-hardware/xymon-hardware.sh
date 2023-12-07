@@ -259,41 +259,47 @@ fi
 "$SENSORS" -uA "$SENSOR_PROBE" | grep : | grep -v beep_enable | grep -v "alarm" | grep -v "type" > "$TMP_FILE"
 while read SENSORS_LINE ; do
 #echo 	"Ligne : $SENSORS_LINE"
+	unset MAX_CRIT MAX_HYST
 	echo $SENSORS_LINE | grep -q ":$"
 
 	if [ $? -eq 0 ] ; then
 		TITLE=$(echo $SENSORS_LINE | awk -F: '{print $1}' | sed 's/\ /_/g' |sed 's/^-/Negative_/' |sed 's/^+/Positive_/')
-#		echo "Title : $TITLE"
 	else
 		find_type "$SENSORS_LINE"
 		echo $SENSORS_LINE | grep -q "input:"
-			if [ $? -eq 0 ] ; then
-				VALUE=$(echo $SENSORS_LINE | awk '{print $2}')
-#				echo "Value : $VALUE"
-			fi
+		if [ $? -eq 0 ] ; then
+			VALUE=$(echo $SENSORS_LINE | awk '{print $2}')
+		fi
 		echo $SENSORS_LINE |grep -q "_max:"
-			if [ $? -eq 0 ] ; then
-				PANIC=$(echo $SENSORS_LINE | awk '{print $2}')
-				MAX=$PANIC
-#				echo  "Panic : $PANIC"
-			fi
+		if [ $? -eq 0 ] ; then
+			MAX=$(echo $SENSORS_LINE | awk '{print $2}')
+		fi
 		echo $SENSORS_LINE |grep -q "_max_hyst:"
-			if [ $? -eq 0 ] ; then
-				WARNING=$(echo $SENSORS_LINE | awk '{print $2}')
-#				echo "Warning : $WARNING"
-			fi
+		if [ $? -eq 0 ] ; then
+			MAX_HYST=$(echo $SENSORS_LINE | awk '{print $2}')
+		fi
+		echo $SENSORS_LINE |grep -q "_crit:"
+		if [ $? -eq 0 ] ; then
+                	MAX_CRIT=$(echo $SENSORS_LINE | awk '{print $2}')
+                fi
 		echo $SENSORS_LINE |grep -q "_min:"
-			if [ $? -eq 0 ] ; then
-                        	MIN=$(echo $SENSORS_LINE | awk '{print $2}')
-#				echo "Min : $MIN"
-	                fi
-			if [ "$TYPE" == "volt" ] && [ "$MIN" ] && [ $VALUE ] && [ $MAX ] ; then
-				test_volt $TITLE $VALUE $MIN $MAX
-			elif [ "$TYPE" == "fan" ] && [ $TITLE ] && [ $MIN ] && [ $VALUE ] ; then
-				test_fan $TITLE $VALUE $MIN
-			elif [ "$TYPE" == "temp" ] && [ $TITLE ] && [ $VALUE ] && [ $WARNING ] && [ $PANIC ] ; then
-				test_temperature $TITLE $VALUE $WARNING $PANIC
-			fi
+		if [ $? -eq 0 ] ; then
+                       	MIN=$(echo $SENSORS_LINE | awk '{print $2}')
+                fi
+		if [ $MAX_HYST ] ; then
+			WARNING=$MAX_HYST
+			PANIC=$MAX
+		elif [ $MAX_CRIT ] ; then
+			WARNING=$MAX
+			PANIC=$MAX_CRIT
+		fi
+		if [ "$TYPE" == "volt" ] && [ "$MIN" ] && [ $VALUE ] && [ $MAX ] ; then
+			test_volt $TITLE $VALUE $MIN $MAX
+		elif [ "$TYPE" == "fan" ] && [ $TITLE ] && [ $MIN ] && [ $VALUE ] ; then
+			test_fan $TITLE $VALUE $MIN
+		elif [ "$TYPE" == "temp" ] && [ $TITLE ] && [ $VALUE ] && [ $WARNING ] && [ $PANIC ] ; then
+			test_temperature $TITLE $VALUE $WARNING $PANIC
+		fi
 	fi
 
 done < "$TMP_FILE"
@@ -471,9 +477,9 @@ if [ $? -eq 0 ] ; then
 	use_smartctl
 fi
 grep -q ^HDDTEMP=1 $CONFIG_FILE
-#if [ $? -eq 0 ] ; then
-#	use_hddtemp
-#fi
+if [ $? -eq 0 ] ; then 
+	use_hddtemp
+fi
 grep -q ^OPENMANAGE=1 $CONFIG_FILE
 if [ $? -eq 0 ] ; then
 	use_openmanage
