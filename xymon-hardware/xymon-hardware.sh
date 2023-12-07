@@ -70,12 +70,10 @@ fi
 #
 #Hard disk temperature monitoring
 
+source $CONFIG_FILE
 if [ -f "$MSG_FILE" ] ; then
 	rm "$MSG_FILE"
 fi
-
-DISK_WARNING_TEMP=$(grep ^DISK_WARNING_TEMP= $CONFIG_FILE | sed s/^DISK_WARNING_TEMP=//)
-DISK_PANIC_TEMP=$(grep ^DISK_PANIC_TEMP= $CONFIG_FILE | sed s/^DISK_PANIC_TEMP=//)
 
 function set_disk_entries_values()
 {
@@ -94,7 +92,7 @@ function set_disk_entries_values()
 
 function use_hddtemp ()
 {
-  for ENTRIES in $(grep "^DISK=" "$CONFIG_FILE" | sed s/^DISK=// ) ; do
+  for ENTRIES in $DISKS ; do
   	DISK=$(echo $ENTRIES | awk -F, '{print $1}')
 	set_disk_entries_values $ENTRIES
 	HDD_TEMP="$($CMD_HDDTEMP $DISK | sed s/..$// | awk '{print $NF}')"
@@ -122,13 +120,12 @@ done
 
 function use_smartctl ()
 {
-SMARTCTL_CHIPSET="$(grep ^SMARTCTL_CHIPSET= $CONFIG_FILE | sed s/^SMARTCTL_CHIPSET=//)"
 if [ $SMARTCTL_CHIPSET ] ; then
 	SMARTCTL_ARGS="-A -d $SMARTCTL_CHIPSET"
 else
 	SMARTCTL_ARGS="-A"
 fi
-for ENTRIES in $(grep "^DISK=" "$CONFIG_FILE" | sed s/^DISK=//) ; do
+for ENTRIES in $DISKS ; do
 	DISK=$(echo $ENTRIES | awk -F, '{print $1}')
 	set_disk_entries_values $ENTRIES
 	HDD_TEMP="$($SMARTCTL $SMARTCTL_ARGS $DISK | grep "^194" | awk '{print $10}')"
@@ -250,7 +247,7 @@ echo "$LINE" | grep -q "in[0-9]"
 
 function use_lmsensors ()
 {
-SENSOR_PROBE="$(grep ^SENSOR_PROBE= $CONFIG_FILE | sed s/^SENSOR_PROBE=//)"
+for SENSOR_PROBE in $SENSOR_PROBES ; do
 if [ -z $SENSOR_PROBE ] ; then
 	echo "No sensor probe configured"
 	break
@@ -303,6 +300,7 @@ while read SENSORS_LINE ; do
 	fi
 
 done < "$TMP_FILE"
+done
 }
 
 function use_openmanage ()
@@ -468,24 +466,19 @@ $HPACUCLI ctrl all show config | grep drive | while read OUTPUT ; do
 done
 }
 
-grep -q ^HPACUCLI=1 $CONFIG_FILE
-if [ $? -eq 0 ] ; then
+if [ $HPACUCLI -eq 1 ] ; then
         use_hpacucli
 fi
-grep -q ^SMARTCTL=1 $CONFIG_FILE
-if [ $? -eq 0 ] ; then
+if [ $SMARTCTL -eq 1 ] ; then
 	use_smartctl
 fi
-grep -q ^HDDTEMP=1 $CONFIG_FILE
-if [ $? -eq 0 ] ; then 
+if [ $HDDTEMP -eq 1 ] ; then 
 	use_hddtemp
 fi
-grep -q ^OPENMANAGE=1 $CONFIG_FILE
-if [ $? -eq 0 ] ; then
+if [ $OPENMANAGE -eq 1 ] ; then
 	use_openmanage
 fi
-grep -q ^SENSOR=1 $CONFIG_FILE
-if [ $? -eq 0 ] ; then
+if [ $SENSOR -eq 0 ] ; then
 	use_lmsensors
 fi
 if [ "$RED" ] ; then
