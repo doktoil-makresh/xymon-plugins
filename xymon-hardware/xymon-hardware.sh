@@ -33,10 +33,7 @@ MSG_FILE="${XYMONTMP}/xymon-hardware.msg"
 CONFIG_FILE="${XYMONCLIENTHOME}/etc/xymon-hardware.cfg"
 TMP_FILE="${XYMONTMP}/xymon-hardware.tmp"
 CMD_HDDTEMP="sudo /usr/sbin/hddtemp"
-SENSORS="/usr/bin/sensors"
-SMARTCTL="sudo /usr/sbin/smartctl"
 OMREPORT="/opt/dell/srvadmin/sbin/omreport"
-HPACUCLI="sudo /usr/sbin/hpacucli"
 
 #Don't change anything from here (or assume all responsibility)
 unset YELLOW
@@ -126,7 +123,7 @@ fi
 for ENTRIES in $DISKS ; do
 	DISK=$(echo $ENTRIES | awk -F, '{print $1}')
 	set_disk_entries_values $ENTRIES
-	HDD_TEMP="$($SMARTCTL $SMARTCTL_ARGS $DISK | grep "^194" | awk '{print $10}')"
+	HDD_TEMP="$(sudo smartctl $SMARTCTL_ARGS $DISK | grep "^194" | awk '{print $10}')"
         if [ ! "$(echo $HDD_TEMP | grep "^[ [:digit:] ]*$")" ] ; then
                 RED=1
                 LINE="&red Disk $DISK temperature is UNKNOWN (HDD_TEMP VALUE IS : $HDD_TEMP).
@@ -251,7 +248,7 @@ if [ -z $SENSOR_PROBE ] ; then
 	break
 fi
 
-"$SENSORS" -uA "$SENSOR_PROBE" | grep : | grep -v beep_enable | grep -v "alarm" | grep -v "type" > "$TMP_FILE"
+sensors -uA "$SENSOR_PROBE" | grep : | grep -v beep_enable | grep -v "alarm" | grep -v "type" > "$TMP_FILE"
 while read SENSORS_LINE ; do
 #echo 	"Ligne : $SENSORS_LINE"
 	unset MAX_CRIT MAX_HYST
@@ -429,7 +426,7 @@ fi
 }
 function use_hpacucli ()
 {
-$HPACUCLI ctrl all show config | grep drive | while read OUTPUT ; do
+sudo /usr/sbin/hpacucli ctrl all show config | grep drive | while read OUTPUT ; do
   TYPE=$(echo $OUTPUT | awk '{print $1}' | sed s/drive//)
   SLOT=$(echo $OUTPUT | awk '{print $2}')
   STATUS=$(echo $OUTPUT | awk '{print $NF}' | sed s/\)//)
