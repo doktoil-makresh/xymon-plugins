@@ -20,15 +20,15 @@ else
 fi
 
 if [ "$radio1_status" == "true" ] ; then
-        radio1_color=green
+  radio1_color=green
 else
-        radio1_color=red
+  radio1_color=red
 	global_color=red
 fi
 
 #Send Xymon the results
-"$XYMON" "$XYMSRV" "status+"$INTERVAL" "$MACHINE"."$TEST" "$global_color" $(date)
+"$XYMON" "$XYMSRV" "status "$MACHINE"."$TEST" "$global_color" $(date)
 
-&radio0_color Radio0 running: $radio0_status
-&radio1_color Radio1 running: $radio1_status
+&$radio0_color Radio0 running: $radio0_status
+&$radio1_color Radio1 running: $radio1_status
 "
