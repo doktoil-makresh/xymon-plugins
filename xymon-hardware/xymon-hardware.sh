@@ -113,6 +113,34 @@ HDD_TEMP : $HDD_TEMP"
 done
 }
 
+function use_nvme ()
+{
+for ENTRIES in $NVMES; do
+	DISK=$(echo $ENTRIES | awk -F, '{print $1}')
+	set_disk_entries_values $ENTRIES
+	DISK_TEMP=$(sudo nvme smart-log $DISK | grep temperature | awk '{print $3}')
+	if [ ! "$(echo $DISK_TEMP | grep "^[ [:digit:] ]*$")" ] ; then
+                RED=1
+                LINE="&red Disk $DISK temperature is UNKNOWN (DISK_TEMP VALUE IS : $DISK_TEMP).
+It seems S.M.A.R.T. is no more responding !!!"
+        echo "La température de $DISK n'est pas un nombre :/
+DISK_TEMP : $DISK_TEMP"
+        elif [ "$DISK_TEMP" -ge "$LOCAL_DISK_PANIC_TEMP" ] ; then
+                RED=1
+                LINE="&red Disk temperature is CRITICAL (Panic is $LOCAL_DISK_PANIC_TEMP) :
+"$DISK"_temperature: ${DISK_TEMP}"
+        elif [ "$DISK_TEMP" -ge "$LOCAL_DISK_WARNING_TEMP" ] ; then
+                YELLOW="1"
+                LINE="&yellow Disk temperature is HIGH (Warning is $LOCAL_DISK_WARNING_TEMP) :
+"$DISK"_temperature: ${DISK_TEMP}"
+        elif [ "$DISK_TEMP" -lt "$LOCAL_DISK_WARNING_TEMP" ] ; then
+                LINE="&green Disk temperature is OK (Warning is $LOCAL_DISK_WARNING_TEMP) :
+"$DISK"_temperature: ${DISK_TEMP}"
+        fi
+        echo "$LINE" >> "$MSG_FILE"
+done
+}
+
 function use_smartctl ()
 {
 if [ $SMARTCTL_CHIPSET ] ; then
@@ -463,6 +491,9 @@ done
 
 if [ $HPACUCLI -eq 1 ] ; then
         use_hpacucli
+fi
+if [ $NVME -eq 1 ] ; then
+	use_nvme
 fi
 if [ $SMARTCTL -eq 1 ] ; then
 	use_smartctl
