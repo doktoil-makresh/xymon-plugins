@@ -18,8 +18,6 @@ export LANG=en_US
 CONFIG_FILE=${XYMONCLIENTHOME}/etc/xymon-duplicity.cfg
 #Load configuration file
 source $CONFIG_FILE
-BACKUP_BASE_DIR=${DUPLICITY_PROTOCOL}://${DUPLICITY_USER}@${DUPLICITY_SERVER}
-
 
 STATUS_FILE=${XYMONTMP}/xymon-duplicity.tmp
 rm -f $STATUS_FILE
@@ -28,30 +26,35 @@ rm -f $STATUS_FILE
 TODAY=$(LANG=en_US date +%c | awk '{print $1,$2,$3}')
 YESTERDAY=$(LANG=en_US date +"%c" -d yesterday | awk '{print $1,$2,$3}')
 
+for DUPLICITY_SERVER in $DUPLICITY_SERVERS; do
+BACKUP_BASE_DIR=${DUPLICITY_PROTOCOL}://${DUPLICITY_USER}@${DUPLICITY_SERVER}
+
+
 for FOLDER in $FOLDERS ; do
-	COLLECTION_STATUS=$(sudo duplicity collection-status $BACKUP_BASE_DIR/$MACHINE/$FOLDER 2>/dev/null)
+	COLLECTION_STATUS=$(sudo duplicity collection-status ${BACKUP_BASE_DIR}/${MACHINE}${FOLDER} 2>/dev/null)
 	exitcode=$?
 	LATEST=$(echo "$COLLECTION_STATUS" | egrep "^Chain end time:" | tail -n 1 | awk '{print $4,$5,$6}' | sed  s/\ \/\ /)
 	
 #Check backup status
-	echo "Checks for $FOLDER backup:" >> $STATUS_FILE
+	echo "Checks for $FOLDER backup on $DUPLICITY_SERVER:" >> $STATUS_FILE
 	if [[ $exitcode != 0 ]] ; then
 		red=1
-		echo "&red Critical - Unable to perform the check command" >> $STATUS_FILE
+		echo "&red Critical - Unable to perform the check command on $DUPLICITY_SERVER" >> $STATUS_FILE
 	fi
 	if [[ $LATEST == "" ]] ; then
 		red=1
 		echo "&red Critical - No backup found at $BACKUP_BASE_DIR/$MACHINE/$FOLDER" >> $STATUS_FILE
 	fi
 	if [[ $LATEST == *$TODAY* ]] ; then
-		echo "&green OK - $LATEST" >> $STATUS_FILE
+		echo "&green OK on $DUPLICITY_SERVER - $LATEST" >> $STATUS_FILE
 	elif [[ $LATEST == *$YESTERDAY* ]] ; then
 		yellow=1
-		echo "&yellow Warning - $LATEST" >> $STATUS_FILE
+		echo "&yellow Warning on $DUPLICITY_SERVER - $LATEST" >> $STATUS_FILE
 	else
 		red=1
-		echo "&red Critical - $LATEST" >> $STATUS_FILE
+		echo "&red Critical on $DUPLICITY_SERVER - $LATEST" >> $STATUS_FILE
 	fi
+done
 done
 
 #Define global status
