@@ -1,0 +1,33 @@
+{
+  "global": {
+    "warn_temp": 65,
+    "max_temp": 80
+  },
+
+  "sensors_config": {
+    "use_sensors": "True",
+    "ignored_sensors": [
+      "GPU",
+      "iwlwifi_1-virtual-0"
+    ],
+    "sensors_thresholds": {
+      "acpitz-acpi-0": {
+        "warn_temp": 50,
+        "max_temp": 70
+      }
+    }
+  },
+  "smartctl_config": {
+    "use_smartctl": "True",
+    "ignored_storages": [
+      "broken_disk",
+      "unsupported_disk"
+    ],
+    "storage_thresholds": {
+      "sda": {
+        "warn_temp": 60,
+        "max_temp": 70
+      }
+    }
+  }
+}

@@ -350,6 +350,12 @@ if __name__=="__main__":
                                 garage_humidity = weatherStation.getGarageHumidity()
                                 salledo_temp = weatherStation.getSalledoTemp()
                                 salledo_humidity = weatherStation.getSalledoHumidity()
+                                names = ["in_", "out_", "floor_", "veranda_", "garage_", "salledo_"]
+                                for name in names:
+                                  if $name+"temp" = 3276.5:
+                                    $name+"temp" = "Replace the device battery"
+                                  if $name+"humidity" = 125.0:
+                                    $name+"humidity" = "Replace the device battery"
                                 #Write datas to file
                                 f = open("/tmp/home_sensors", 'w')
                                 f.write(str(in_temp)+","+str(in_humidity)+","+str(out_temp)+","+str(out_humidity)+","+str(floor_temp)+","+str(floor_humidity)+","+str(veranda_temp)+","+str(veranda_humidity)+","+str(garage_temp)+","+str(garage_humidity)+","+str(salledo_temp)+","+str(salledo_humidity))

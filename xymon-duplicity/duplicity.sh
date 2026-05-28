@@ -15,7 +15,7 @@ fi
 TEST=duplicity
 INTERVAL=12h
 export LANG=en_US
-CONFIG_FILE=${XYMONCLIENTHOME}/etc/xymon-duplicity.cfg
+CONFIG_FILE=${XYMONCLIENTHOME}/etc/duplicity.cfg
 #Load configuration file
 source $CONFIG_FILE
 
@@ -46,13 +46,13 @@ for FOLDER in $FOLDERS ; do
 		echo "&red Critical - No backup found at $BACKUP_BASE_DIR/$MACHINE/$FOLDER" >> $STATUS_FILE
 	fi
 	if [[ $LATEST == *$TODAY* ]] ; then
-		echo "&green OK on $DUPLICITY_SERVER - $LATEST" >> $STATUS_FILE
+		echo "&green OK for $FOLDER on $DUPLICITY_SERVER - $LATEST" >> $STATUS_FILE
 	elif [[ $LATEST == *$YESTERDAY* ]] ; then
 		yellow=1
-		echo "&yellow Warning on $DUPLICITY_SERVER - $LATEST" >> $STATUS_FILE
+		echo "&yellow Warning for $FOLDER on $DUPLICITY_SERVER - $LATEST" >> $STATUS_FILE
 	else
 		red=1
-		echo "&red Critical on $DUPLICITY_SERVER - $LATEST" >> $STATUS_FILE
+		echo "&red Critical for $FOLDER on $DUPLICITY_SERVER - $LATEST" >> $STATUS_FILE
 	fi
 done
 done
