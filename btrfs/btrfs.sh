@@ -13,23 +13,22 @@ fi
 tmp_file=${XYMONTMP}/xymon_btrfs_$$
 
 TEST=btrfs
-red=0
 function btrfs_monitor()
 {
   filesystem=$1
-  btrfs device stats $filesystem | sed '/^[[:space:]]*$/d' | while read line ; do
+  while read line ; do
    value=$(echo $line | awk '{print $2}')
    part_name=$(echo $line | awk -F'[][]' '{print $2}')
    item=$(echo $line | awk -F'[. ]' '{print $2}')
    if [ $value -gt 0 ]; then
-     export red=1
+		 global_red=1
      color=red
    else
      color=green
    fi
    echo "&$color $item on partition $part_name: $value" >> $tmp_file
-  done
-} 
+  done < <(btrfs device stats $filesystem | sed '/^[[:space:]]*$/d')
+}
 
 source ${XYMONCLIENTHOME}/etc/btrfs.cfg
 
@@ -38,10 +37,13 @@ for filesystem in $filesystems; do
   btrfs_monitor $filesystem
 done
 
-if [ $red -eq 1 ]; then
-  status="red"
+#Define global status
+if [ "$global_red" ] ; then
+ status=red
+elif [ "$YELLOW" ] ; then
+  status=yellow
 else
-  status="green"
+  status=green
 fi
 
 "$XYMON" "$XYMSRV" "status "$MACHINE"."$TEST" "$status" $(date)
